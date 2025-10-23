@@ -13,15 +13,31 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 
-// Public routes
-Route::post('/register', RegisterController::class)->middleware('throttle:6,1');
-Route::post('/login', LoginController::class)->middleware('throttle:6,1');
+// Public routes - move to regular web middleware for proper session handling
+Route::post('/register', RegisterController::class)->middleware(['web', 'throttle:6,1']);
+Route::post('/login', LoginController::class)->middleware(['web', 'throttle:6,1']);
+
+// CSRF cookie route for SPA authentication 
+Route::get('/csrf-cookie', function() {
+    return response()->json(['message' => 'CSRF cookie set']);
+})->middleware('web');
 
 // 2FA verification during login (requires temp token)
-Route::middleware('auth:sanctum')->post('/login/verify', [TwoFactorAuthController::class, 'verifyLogin']);
+Route::middleware(['web', 'auth:sanctum'])->post('/login/verify', [TwoFactorAuthController::class, 'verifyLogin']);
 
-// Protected routes
-Route::middleware('auth:sanctum')->group(function () {
+// Debug endpoint to test session and auth state
+Route::middleware('web')->get('/debug', function(\Illuminate\Http\Request $request) {
+    return response()->json([
+        'authenticated' => auth()->check(),
+        'user' => auth()->user(),
+        'session_id' => $request->session()->getId(),
+        'has_session' => $request->hasSession(),
+        'csrf_token' => csrf_token(),
+    ]);
+});
+
+// Protected routes - ensure web middleware is applied first for session access
+Route::middleware(['web', 'auth:sanctum'])->group(function () {
     Route::post('/logout', LogoutController::class);
     
     // Profile routes
