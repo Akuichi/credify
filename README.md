@@ -30,42 +30,99 @@ A secure PayPal-like application that implements user registration, authenticati
 
 ## Quick Start
 
+### Using Setup Script (Recommended)
+
+We've provided setup scripts to make the installation process easier:
+
+#### Linux/macOS
+```bash
+git clone https://github.com/Akuichi/credify.git
+cd credify
+chmod +x setup.sh
+./setup.sh
+```
+
+#### Windows
+```powershell
+git clone https://github.com/Akuichi/credify.git
+cd credify
+.\setup.bat
+```
+
+After running the setup script, start the application with:
+```bash
+docker compose up
+```
+
+### Manual Setup
+
 1. Clone the repository
 ```bash
 git clone https://github.com/Akuichi/credify.git
 cd credify
 ```
 
-2. Start the Docker containers
+2. Copy environment files
+```bash
+cp backend/.env.example backend/.env
+```
+
+3. Install composer dependencies (critical step)
+```bash
+# Option 1: Install locally (recommended)
+cd backend
+composer install
+cd ..
+
+# Option 2: Install via Docker
+docker compose run --rm app composer install
+```
+
+4. Build and start the Docker containers
 ```bash
 docker compose up --build
 ```
 
-3. For testing purposes, you may need to disable CSRF for API routes:
-```php
-// In app/Http/Middleware/VerifyCsrfToken.php
-protected $except = [
-    'api/*',
-];
+5. In a new terminal, run the setup commands
+```bash
+# Generate application key
+docker compose exec app php artisan key:generate
+
+# Create storage links
+docker compose exec app php artisan storage:link
+
+# Run database migrations
+docker compose exec app php artisan migrate --seed
+
+# Clear cache
+docker compose exec app php artisan cache:clear
+docker compose exec app php artisan config:cache
 ```
 
-3. Configure email settings in `.env`
+6. Configure email settings in `.env`
 ```bash
-# Copy the example env file (if not already done)
-cp backend/.env.example backend/.env
-
-# Edit the .env file and configure your email settings
+# Edit the backend/.env file and configure email settings
 # See "Email Configuration" section below for details
 ```
 
-4. Run migrations
-```bash
-docker compose exec app php artisan migrate --seed
-```
-
-5. Access the application
+7. Access the application
    - Frontend: http://localhost:3000
    - API: http://localhost:8000/api
+
+## Troubleshooting
+
+If you encounter issues with missing vendor directory:
+```
+Warning: require(/var/www/vendor/autoload.php): Failed to open stream
+```
+
+The most common issue is that the vendor directory is being overwritten. Try:
+1. Install dependencies locally (see step 3 above)
+2. Or remove the vendor mount from docker-compose.yml:
+   ```
+   # Comment out this line:
+   # - ./backend/vendor:/var/www/vendor
+   ```
 
 ## Email Configuration
 
