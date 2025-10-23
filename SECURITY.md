@@ -43,6 +43,8 @@ This document outlines the security features and implementation details of the C
 ### Logout Security
 - Logout invalidates the current session
 - API tokens are properly revoked on logout
+- Users can view and terminate active sessions
+- Option to terminate all other sessions remotely
 
 ## Input Validation and Sanitization
 

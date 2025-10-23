@@ -5,14 +5,21 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Log;
 
 class ProfileController extends Controller
 {
     public function show(Request $request): JsonResponse
     {
-        return response()->json([
+        // Add debug logging
+        Log::info('User request', [
             'user' => $request->user(),
+            'auth' => auth()->check(),
+            'session_id' => $request->session()->getId(),
+            'session_has_data' => $request->session()->all(),
         ]);
+        
+        return response()->json($request->user());
     }
 
     public function update(Request $request): JsonResponse

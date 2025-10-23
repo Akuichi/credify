@@ -74,6 +74,9 @@ npm test
 - [ ] Verify user information displays correctly
 - [ ] Check last login information is accurate
 - [ ] Test updating user profile information
+- [ ] Verify active sessions are displayed correctly
+- [ ] Test terminating individual sessions
+- [ ] Test "Sign out other sessions" functionality
 
 #### Logout
 - [ ] Verify logout works and invalidates session
@@ -88,6 +91,8 @@ npm test
 ### Session Security
 - [ ] Verify session cookies are HTTP-only
 - [ ] Test session expiration works as expected
+- [ ] Verify remote session termination works
+- [ ] Test that sessions cannot be hijacked
 
 ### 2FA Security
 - [ ] Verify 2FA cannot be bypassed

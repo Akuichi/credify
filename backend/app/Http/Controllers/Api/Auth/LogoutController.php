@@ -10,8 +10,17 @@ class LogoutController extends Controller
 {
     public function __invoke(Request $request): JsonResponse
     {
-        // Revoke the user's current token
-        $request->user()->currentAccessToken()->delete();
+        // Support both session-based and token-based logout
+        // If using personal access tokens
+        if (method_exists($request->user(), 'currentAccessToken') && $request->user()->currentAccessToken()) {
+            $request->user()->currentAccessToken()->delete();
+        }
+
+        // Invalidate session for SPA
+        if ($request->hasSession()) {
+            $request->session()->invalidate();
+            $request->session()->regenerateToken();
+        }
 
         return response()->json([
             'message' => 'Successfully logged out',

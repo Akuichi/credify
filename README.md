@@ -18,6 +18,7 @@ A secure PayPal-like application that implements user registration, authenticati
   - Account information display
   - Security logs (last login, IP address)
   - 2FA status management
+  - Active session management (view and terminate)
 
 ## Technology Stack
 
@@ -54,5 +55,7 @@ docker compose exec app php artisan migrate --seed
 - CSRF protection
 - Rate limiting on authentication endpoints
 - Secure session management
-- Two-factor authentication
+- Two-factor authentication (TOTP)
 - Login activity logging
+- Multiple session management and control
+- Remote session termination

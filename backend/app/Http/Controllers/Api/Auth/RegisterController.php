@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\Auth\RegisterRequest;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 
 class RegisterController extends Controller
@@ -21,12 +22,13 @@ class RegisterController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
-        $token = $user->createToken('auth_token')->plainTextToken;
+        // Log the user in for SPA and regenerate session
+        Auth::login($user);
+        $request->session()->regenerate();
 
         return response()->json([
             'message' => 'User registered successfully',
             'user' => $user,
-            'token' => $token,
         ], 201);
     }
 }

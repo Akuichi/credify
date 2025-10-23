@@ -4,6 +4,7 @@ use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\LogoutController;
 use App\Http\Controllers\Api\Auth\ProfileController;
 use App\Http\Controllers\Api\Auth\RegisterController;
+use App\Http\Controllers\Api\Auth\SessionController;
 use App\Http\Controllers\Api\Auth\TwoFactorAuthController;
 use Illuminate\Support\Facades\Route;
 
@@ -49,5 +50,12 @@ Route::middleware(['web', 'auth:sanctum'])->group(function () {
         Route::post('/setup', [TwoFactorAuthController::class, 'setup']);
         Route::post('/verify', [TwoFactorAuthController::class, 'verify']);
         Route::post('/disable', [TwoFactorAuthController::class, 'disable']);
+    });
+    
+    // Session management routes
+    Route::prefix('sessions')->group(function () {
+        Route::get('/', [SessionController::class, 'index']);
+        Route::delete('/{id}', [SessionController::class, 'destroy']);
+        Route::delete('/', [SessionController::class, 'destroyOthers']);
     });
 });
