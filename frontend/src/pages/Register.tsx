@@ -1,13 +1,16 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Form, Input, Button } from '../components/Form';
 import type { RegisterData } from '../types/auth';
+import { validatePassword, getPasswordStrength } from '../utils/validation';
 
 export default function Register() {
   const { register } = useAuth();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [passwordValidation, setPasswordValidation] = useState({ valid: true, message: '' });
+  const [passwordStrength, setPasswordStrength] = useState('');
   const [formData, setFormData] = useState<RegisterData>({
     full_name: '',
     email: '',
@@ -19,6 +22,18 @@ export default function Register() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
+    
+    // Validate password before submission
+    if (formData.password) {
+      const validation = validatePassword(formData.password);
+      setPasswordValidation(validation);
+      
+      if (!validation.valid) {
+        setError('Please fix the password issues before submitting.');
+        return;
+      }
+    }
+    
     setIsLoading(true);
 
     try {
@@ -36,6 +51,13 @@ export default function Register() {
       ...prev,
       [name]: value,
     }));
+    
+    // Validate password in real-time
+    if (name === 'password' && value) {
+      const result = validatePassword(value);
+      setPasswordValidation(result);
+      setPasswordStrength(getPasswordStrength(value));
+    }
   };
 
   return (
@@ -95,10 +117,16 @@ export default function Register() {
             required
             value={formData.password}
             onChange={handleChange}
+            error={formData.password && !passwordValidation.valid ? passwordValidation.message : ''}
           />
-          <div className="text-xs text-gray-600 -mt-3 mb-3">
-            Password must be at least 8 characters and include uppercase, lowercase, 
-            numbers, and special characters.
+          <div className={`text-xs ${passwordStrength === 'weak' ? 'text-red-500' : 
+            passwordStrength === 'medium' ? 'text-yellow-500' : 
+            passwordStrength === 'strong' ? 'text-green-500' : 'text-gray-600'} -mt-3 mb-3`}>
+            {formData.password ? (
+              passwordStrength ? `Password strength: ${passwordStrength}` : ''
+            ) : (
+              'Password must be at least 8 characters and include uppercase, lowercase, numbers, and special characters.'
+            )}
           </div>
 
           <Input
