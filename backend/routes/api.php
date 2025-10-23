@@ -71,4 +71,10 @@ Route::middleware(['web', 'auth:sanctum'])->group(function () {
         Route::post('/verify/send', [VerificationController::class, 'sendVerificationEmail'])
             ->middleware('throttle:6,1');
     });
+    
+    // Admin email testing routes
+    Route::prefix('admin/email')->group(function () {
+        Route::get('/test-config', [\App\Http\Controllers\Api\Admin\EmailController::class, 'testEmailConfig']);
+        Route::post('/test-verification', [\App\Http\Controllers\Api\Admin\EmailController::class, 'sendTestVerificationEmail']);
+    });
 });

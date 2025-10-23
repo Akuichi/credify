@@ -18,6 +18,18 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | SendGrid API Key
+    |--------------------------------------------------------------------------
+    |
+    | This is your SendGrid API key used for authenticating with the SendGrid
+    | API. This key is stored securely in your .env file.
+    |
+    */
+    
+    'sendgrid_api_key' => env('MAIL_SENDGRID_API_KEY'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Mailer Configurations
     |--------------------------------------------------------------------------
     |

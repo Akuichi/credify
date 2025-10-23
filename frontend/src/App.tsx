@@ -8,6 +8,7 @@ import Dashboard from './pages/Dashboard'
 import TwoFactorSetup from './pages/TwoFactorSetup'
 import TwoFactorVerify from './pages/TwoFactorVerify'
 import EmailVerified from './pages/EmailVerified'
+import AdminEmailSettings from './pages/AdminEmailSettings'
 
 export default function App() {
   const { isAuthenticated, logout } = useAuth();
@@ -80,6 +81,11 @@ export default function App() {
             </PublicRoute>
           } />
           <Route path="/email-verified" element={<EmailVerified />} />
+          <Route path="/admin/email-settings" element={
+            <ProtectedRoute>
+              <AdminEmailSettings />
+            </ProtectedRoute>
+          } />
         </Routes>
       </main>
     </div>

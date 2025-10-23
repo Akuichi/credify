@@ -7,6 +7,82 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+# Credify Backend API
+
+This is the backend API for the Credify application, built with Laravel 12.
+
+## Email Configuration
+
+The application supports multiple email providers for sending verification emails and notifications:
+
+### Available Email Providers
+
+1. **Mailtrap (Development)**: For catching emails during development
+2. **Gmail SMTP (Testing)**: For testing with a real email provider
+3. **SendGrid (Production)**: For production deployments
+
+### Setting Up Email
+
+#### 1. Mailtrap (Recommended for Development)
+
+1. Create a free account at [Mailtrap](https://mailtrap.io/)
+2. Navigate to your inbox and find the SMTP credentials
+3. Update your `.env` file:
+   ```
+   MAIL_MAILER=smtp
+   MAIL_HOST=sandbox.smtp.mailtrap.io
+   MAIL_PORT=2525
+   MAIL_USERNAME=your_mailtrap_username
+   MAIL_PASSWORD=your_mailtrap_password
+   MAIL_ENCRYPTION=tls
+   MAIL_FROM_ADDRESS="noreply@credify.test"
+   MAIL_FROM_NAME="Credify"
+   ```
+
+#### 2. Gmail SMTP
+
+1. Enable 2-Factor Authentication on your Gmail account
+2. Generate an App Password:
+   - Go to [Google Account Security](https://myaccount.google.com/security)
+   - Select "2-Step Verification"
+   - Scroll down to "App passwords"
+   - Select "Other" and name it "Credify"
+   - Copy the 16-character password (without spaces)
+3. Update your `.env` file:
+   ```
+   MAIL_MAILER=smtp
+   MAIL_HOST=smtp.gmail.com
+   MAIL_PORT=587
+   MAIL_USERNAME=your_gmail_address@gmail.com
+   MAIL_PASSWORD=your16characterapppassword
+   MAIL_ENCRYPTION=tls
+   MAIL_FROM_ADDRESS=your_gmail_address@gmail.com
+   MAIL_FROM_NAME="Credify"
+   ```
+
+#### 3. SendGrid
+
+1. Create a SendGrid account
+2. Generate an API key with "Mail Send" permissions
+3. Update your `.env` file:
+   ```
+   MAIL_MAILER=sendgrid
+   MAIL_SENDGRID_API_KEY=your_sendgrid_api_key
+   MAIL_FROM_ADDRESS="noreply@yourdomain.com"
+   MAIL_FROM_NAME="Credify"
+   ```
+
+## Testing Email Configuration
+
+After configuring your email provider, you can test it by:
+
+1. Log in to the application
+2. Navigate to the Admin dashboard
+3. Go to Email Settings
+4. Click "Test Email Configuration"
+
+The test email will be sent to the currently logged-in user's email address.
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:

@@ -23,7 +23,12 @@ export default function Dashboard() {
               <p><span className="font-medium">Mobile:</span> {user?.mobile_number}</p>
             )}
             <p><span className="font-medium">2FA Status:</span> {user?.two_factor_enabled ? 'Enabled' : 'Disabled'}</p>
-            <p><span className="font-medium">Email Status:</span> {user?.email_verified_at ? 'Verified' : 'Not Verified'}</p>
+            <p>
+              <span className="font-medium">Email Status:</span> {user?.email_verified_at ? 'Verified' : 'Not Verified'} 
+              <Link to="/admin/email-settings" className="ml-2 text-sm text-blue-600 hover:underline">
+                Email Settings
+              </Link>
+            </p>
           </div>
         </div>
 

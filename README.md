@@ -41,14 +41,80 @@ cd credify
 docker compose up --build
 ```
 
-3. Run migrations
+3. Configure email settings in `.env`
+```bash
+# Copy the example env file (if not already done)
+cp backend/.env.example backend/.env
+
+# Edit the .env file and configure your email settings
+# See "Email Configuration" section below for details
+```
+
+4. Run migrations
 ```bash
 docker compose exec app php artisan migrate --seed
 ```
 
-4. Access the application
+5. Access the application
    - Frontend: http://localhost:3000
    - API: http://localhost:8000/api
+
+## Email Configuration
+
+The application supports multiple email providers. Choose one of the following options:
+
+### Mailtrap (Recommended for Development)
+
+1. Create a free account at [Mailtrap](https://mailtrap.io/)
+2. Go to your Mailtrap inbox
+3. Click on "SMTP Settings" and select "Laravel" from the dropdown
+4. Copy the provided credentials
+5. Update the following values in your `.env` file:
+```
+MAIL_MAILER=smtp
+MAIL_HOST=sandbox.smtp.mailtrap.io
+MAIL_PORT=2525
+MAIL_USERNAME=your_mailtrap_username
+MAIL_PASSWORD=your_mailtrap_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS="noreply@credify.test"
+MAIL_FROM_NAME="${APP_NAME}"
+```
+
+### Gmail SMTP (For Testing/Production)
+
+1. Create or use an existing Gmail account
+2. Enable 2-Factor Authentication for that account at [Google Account Security](https://myaccount.google.com/security)
+3. Generate an App Password:
+   - Go to [App Passwords](https://myaccount.google.com/apppasswords)
+   - Select "Other" in the app dropdown
+   - Enter "Credify" (or your preferred name)
+   - Click "Create"
+   - Copy the 16-character password that appears
+4. Update the following values in your `.env` file:
+```
+MAIL_MAILER=smtp
+MAIL_HOST=smtp.gmail.com
+MAIL_PORT=587
+MAIL_USERNAME=your_gmail_address@gmail.com
+MAIL_PASSWORD=your_16_character_app_password
+MAIL_ENCRYPTION=tls
+MAIL_FROM_ADDRESS=your_gmail_address@gmail.com
+MAIL_FROM_NAME="${APP_NAME}"
+```
+> **Important**: Do not use spaces in the app password. Copy the password exactly as shown.
+
+### SendGrid (For Production)
+
+1. Create a free account at [SendGrid](https://sendgrid.com/)
+2. Generate an API key with "Mail Send" permissions
+3. Update the following values in your `.env` file:
+```
+MAIL_MAILER=sendgrid
+MAIL_SENDGRID_API_KEY=your_sendgrid_api_key_here
+MAIL_FROM_ADDRESS="noreply@yourdomain.com"
+MAIL_FROM_NAME="${APP_NAME}"
+```
 
 ## Security Features
 
@@ -60,3 +126,4 @@ docker compose exec app php artisan migrate --seed
 - Login activity logging
 - Multiple session management and control
 - Remote session termination
+- Email verification
