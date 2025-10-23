@@ -80,8 +80,17 @@ class PasswordResetController extends Controller
             ], 400);
         }
         
-        // Update the user's password
+        // Get the user
         $user = User::where('email', $validated['email'])->first();
+        
+        // Check if the new password is the same as the old one
+        if (Hash::check($validated['password'], $user->password)) {
+            return response()->json([
+                'message' => 'Your new password cannot be the same as your old password',
+            ], 422);
+        }
+        
+        // Update the user's password
         $user->update([
             'password' => Hash::make($validated['password']),
         ]);
