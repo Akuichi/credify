@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\Auth\LoginController;
 use App\Http\Controllers\Api\Auth\LogoutController;
+use App\Http\Controllers\Api\Auth\PasswordResetController;
 use App\Http\Controllers\Api\Auth\ProfileController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\SessionController;
@@ -18,6 +19,10 @@ use Illuminate\Support\Facades\Route;
 // Public routes - move to regular web middleware for proper session handling
 Route::post('/register', RegisterController::class)->middleware(['web', 'throttle:6,1']);
 Route::post('/login', LoginController::class)->middleware(['web', 'throttle:6,1']);
+
+// Password reset routes
+Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword'])->middleware(['web', 'throttle:6,1']);
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->middleware(['web', 'throttle:6,1']);
 
 // Email verification link route
 Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verify'])

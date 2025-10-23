@@ -9,6 +9,8 @@ import TwoFactorSetup from './pages/TwoFactorSetup'
 import TwoFactorVerify from './pages/TwoFactorVerify'
 import EmailVerified from './pages/EmailVerified'
 import AdminEmailSettings from './pages/AdminEmailSettings'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
 
 export default function App() {
   const { isAuthenticated, logout } = useAuth();
@@ -81,6 +83,16 @@ export default function App() {
             </PublicRoute>
           } />
           <Route path="/email-verified" element={<EmailVerified />} />
+          <Route path="/forgot-password" element={
+            <PublicRoute>
+              <ForgotPassword />
+            </PublicRoute>
+          } />
+          <Route path="/reset-password" element={
+            <PublicRoute>
+              <ResetPassword />
+            </PublicRoute>
+          } />
           <Route path="/admin/email-settings" element={
             <ProtectedRoute>
               <AdminEmailSettings />

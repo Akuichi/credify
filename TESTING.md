@@ -62,6 +62,20 @@ To run just the password validation tests:
 docker compose exec app php artisan test tests/Feature/PasswordValidationTest.php
 ```
 
+#### Password Reset Tests
+
+Tests for the password reset functionality:
+- `tests/Feature/Auth/PasswordResetTest.php` - Tests for the password reset workflow:
+  - Requesting a password reset token
+  - Resetting a password with a valid token
+  - Token expiration (1 hour)
+  - Validation of email and token
+
+To run just the password reset tests:
+```bash
+docker compose exec app php artisan test tests/Feature/Auth/PasswordResetTest.php
+```
+
 ### Frontend Testing
 
 Run React component tests:
@@ -82,6 +96,15 @@ npm test
   - [ ] Verify passwords shorter than 8 characters are rejected
   - [ ] Verify strong passwords meeting all criteria are accepted
 - [ ] Verify user is created in the database
+
+#### Password Reset
+- [ ] Request password reset with valid email
+- [ ] Verify reset link is sent to email
+- [ ] Test password reset with valid token
+- [ ] Test password reset with expired token (older than 1 hour)
+- [ ] Test password reset with invalid token
+- [ ] Verify password is updated after successful reset
+- [ ] Test login with new password
 
 #### Login
 - [ ] Login with valid credentials

@@ -11,6 +11,8 @@ interface AuthContextType extends AuthState {
   checkVerificationStatus: () => Promise<boolean>;
   logout: () => Promise<void>;
   getUser: () => Promise<void>;
+  forgotPassword: (email: string) => Promise<void>;
+  resetPassword: (data: { email: string; token: string; password: string; password_confirmation: string }) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -207,6 +209,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const forgotPassword = async (email: string): Promise<void> => {
+    try {
+      await api.post('/api/forgot-password', { email });
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to send password reset email');
+    }
+  };
+
+  const resetPassword = async (data: { 
+    email: string; 
+    token: string; 
+    password: string; 
+    password_confirmation: string 
+  }): Promise<void> => {
+    try {
+      await api.post('/api/reset-password', data);
+    } catch (error: any) {
+      throw new Error(error.response?.data?.message || 'Failed to reset password');
+    }
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -218,6 +241,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         checkVerificationStatus,
         logout,
         getUser,
+        forgotPassword,
+        resetPassword,
       }}
     >
       {children}
