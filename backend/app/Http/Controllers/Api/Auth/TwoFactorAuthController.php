@@ -8,7 +8,7 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use PragmaRX\Google2FA\Google2FA;
 use BaconQrCode\Renderer\ImageRenderer;
-use BaconQrCode\Renderer\Image\ImagickImageBackEnd;
+use BaconQrCode\Renderer\Image\SvgImageBackEnd;
 use BaconQrCode\Renderer\RendererStyle\RendererStyle;
 use BaconQrCode\Writer;
 
@@ -48,10 +48,10 @@ class TwoFactorAuthController extends Controller
             $secretKey
         );
 
-        // Generate QR code image
+        // Generate QR code as SVG (doesn't require Imagick extension)
         $renderer = new ImageRenderer(
             new RendererStyle(300),
-            new ImagickImageBackEnd()
+            new SvgImageBackEnd()
         );
 
         $writer = new Writer($renderer);
@@ -60,7 +60,7 @@ class TwoFactorAuthController extends Controller
         return response()->json([
             'message' => '2FA setup initiated',
             'secret' => $secretKey,
-            'qr_code' => 'data:image/png;base64,' . $qrCodeImage,
+            'qr_code' => 'data:image/svg+xml;base64,' . $qrCodeImage,
         ]);
     }
 

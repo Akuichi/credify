@@ -10,9 +10,10 @@ A secure PayPal-like application that implements user registration, authenticati
   - Session-based authentication with Laravel Sanctum
 
 - **Two-Factor Authentication (2FA)**
-  - QR code setup with Google Authenticator
+  - QR code setup with Google Authenticator (SVG-based)
   - TOTP (Time-based One-Time Password) verification
   - 2FA management (enable/disable)
+  - Compatible with any TOTP authenticator app
 
 - **User Dashboard**
   - Account information display

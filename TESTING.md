@@ -101,3 +101,18 @@ npm test
 ### API Security
 - [ ] Test that unauthenticated requests to protected endpoints are rejected
 - [ ] Verify rate limiting is working on auth endpoints
+
+## Troubleshooting
+
+### Two-Factor Authentication Issues
+
+If you encounter issues with 2FA setup:
+
+1. Check that the SVG QR code is being generated correctly
+2. Ensure your authenticator app supports SVG QR codes
+3. If you have issues scanning the QR code, manually enter the secret key in your authenticator app
+
+### Common Issues
+
+- **500 Error on 2FA Setup**: This implementation uses SVG QR codes which don't require the PHP Imagick extension. If you modify the code to use PNG QR codes, make sure the Imagick extension is installed in your Docker container.
+- **2FA Code Not Working**: Ensure server and authenticator app time are in sync, as TOTP is time-based.

@@ -22,7 +22,7 @@ This document outlines the security features and implementation details of the C
 
 ### Implementation
 - Uses the `pragmarx/google2fa` package for TOTP generation
-- QR codes are generated securely using `bacon/bacon-qr-code`
+- QR codes are generated securely using `bacon/bacon-qr-code` with SVG rendering
 - 2FA secrets are encrypted in the database
 - 2FA verification is required after password login when enabled
 

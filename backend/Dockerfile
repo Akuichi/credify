@@ -36,6 +36,11 @@ RUN apt-get update \
 		zlib1g-dev \
 	&& docker-php-ext-install pdo pdo_pgsql pgsql mbstring zip exif pcntl bcmath gd \
 	&& rm -rf /var/lib/apt/lists/*
+	
+# Install ext-intl for TOTP
+RUN apt-get update \
+	&& apt-get install -y libicu-dev \
+	&& docker-php-ext-install intl
 
 # Install Composer
 RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
