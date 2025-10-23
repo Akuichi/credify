@@ -225,6 +225,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }): Promise<void> => {
     try {
       await api.post('/api/reset-password', data);
+      
+      // Immediately clear authentication state after password reset
+      localStorage.removeItem('auth_token');
+      delete api.defaults.headers.common['Authorization'];
+      
+      // Update authentication state to ensure user needs to log in again
+      setState(prev => ({
+        ...prev,
+        user: null,
+        isAuthenticated: false,
+        needsTwoFactor: false,
+        temporaryToken: undefined,
+      }));
     } catch (error: any) {
       throw new Error(error.response?.data?.message || 'Failed to reset password');
     }

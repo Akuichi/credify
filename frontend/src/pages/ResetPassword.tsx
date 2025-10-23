@@ -86,10 +86,11 @@ const ResetPassword: React.FC = () => {
     
     try {
       await resetPassword(formData);
+      // Make sure auth state is completely cleared
+      localStorage.removeItem('auth_token');
+      delete api.defaults.headers.common['Authorization'];
       setSuccess(true);
-      setTimeout(() => {
-        navigate('/login');
-      }, 3000);
+      // Remove the automatic redirect - let user click the button
     } catch (err: any) {
       if (err.message.includes('validation')) {
         // Validation errors
@@ -113,10 +114,18 @@ const ResetPassword: React.FC = () => {
             <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
               <p>Your password has been reset successfully!</p>
             </div>
-            <p className="mb-4">You will be redirected to the login page shortly.</p>
-            <Link to="/login" className="text-blue-600 hover:text-blue-800">
+            <p className="mb-4">Your password has been reset. You can now log in with your new password.</p>
+            <button 
+              onClick={() => {
+                // Ensure we're completely logged out before going to login page
+                localStorage.removeItem('auth_token');
+                delete api.defaults.headers.common['Authorization'];
+                navigate('/login');
+              }}
+              className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-opacity-50"
+            >
               Go to login
-            </Link>
+            </button>
           </div>
         ) : (
           <>
