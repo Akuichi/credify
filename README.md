@@ -46,7 +46,11 @@ chmod +x setup.sh
 ```powershell
 git clone https://github.com/Akuichi/credify.git
 cd credify
-.\setup.bat
+# Method 1: Run with cmd
+cmd /c setup.bat
+
+# Method 2: Run with PowerShell (if Method 1 doesn't work)
+& ".\setup.bat"
 ```
 
 After running the setup script, start the application with:
