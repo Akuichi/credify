@@ -89,7 +89,7 @@ export default function TwoFactorSetup() {
         )}
 
         {!qrCode && !setupComplete && (
-          <div className="mt-8">
+          <div className="mt-8 space-y-4">
             <Button 
               onClick={generateQRCode} 
               isLoading={isLoading}
@@ -97,6 +97,15 @@ export default function TwoFactorSetup() {
             >
               Set up two-factor authentication
             </Button>
+            
+            <div className="text-center">
+              <button
+                onClick={() => navigate('/dashboard')}
+                className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+              >
+                Cancel and return to Dashboard
+              </button>
+            </div>
           </div>
         )}
 
@@ -134,7 +143,7 @@ export default function TwoFactorSetup() {
                 </div>
               </div>
 
-              <div className="mt-6">
+              <div className="mt-6 space-y-3">
                 <Button 
                   type="submit" 
                   isLoading={isLoading}
@@ -142,6 +151,16 @@ export default function TwoFactorSetup() {
                 >
                   Verify and Enable
                 </Button>
+                
+                <div className="text-center">
+                  <button
+                    onClick={() => navigate('/dashboard')}
+                    className="text-gray-600 hover:text-gray-900 text-sm font-medium"
+                    type="button"
+                  >
+                    Cancel setup
+                  </button>
+                </div>
               </div>
             </form>
           </div>

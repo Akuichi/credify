@@ -1,10 +1,12 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import SessionManager from '../components/SessionManager'
+import DisableTwoFactor from '../components/DisableTwoFactor'
 
 export default function Dashboard() {
-  const { user } = useAuth();
+  const { user, getUser } = useAuth();
+  const [showDisable2FA, setShowDisable2FA] = useState(false);
 
   return (
     <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow">
@@ -33,12 +35,32 @@ export default function Dashboard() {
             <div>
               <h4 className="font-medium mb-2">Two-Factor Authentication</h4>
               {user?.two_factor_enabled ? (
-                <div className="flex items-center">
-                  <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mr-2">
-                    Enabled
-                  </span>
-                  <p className="text-sm text-gray-500">Your account is secured with two-factor authentication.</p>
-                </div>
+                <>
+                  {!showDisable2FA ? (
+                    <div className="space-y-3">
+                      <div className="flex items-center">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 mr-2">
+                          Enabled
+                        </span>
+                        <p className="text-sm text-gray-500">Your account is secured with two-factor authentication.</p>
+                      </div>
+                      <button 
+                        onClick={() => setShowDisable2FA(true)}
+                        className="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+                      >
+                        Disable 2FA
+                      </button>
+                    </div>
+                  ) : (
+                    <DisableTwoFactor 
+                      onSuccess={() => {
+                        getUser();
+                        setShowDisable2FA(false);
+                      }}
+                      onCancel={() => setShowDisable2FA(false)}
+                    />
+                  )}
+                </>
               ) : (
                 <div>
                   <p className="text-sm text-gray-500 mb-2">Two-factor authentication is not enabled for your account.</p>
