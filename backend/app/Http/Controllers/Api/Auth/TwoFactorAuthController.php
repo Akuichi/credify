@@ -125,8 +125,11 @@ class TwoFactorAuthController extends Controller
         // Create a new token with full access
         $token = $user->createToken('auth_token')->plainTextToken;
 
-        // Delete temporary token
-        $request->user()->currentAccessToken()->delete();
+        // Only delete the token if it's not a transient token
+        $currentToken = $request->user()->currentAccessToken();
+        if (!($currentToken instanceof \Laravel\Sanctum\TransientToken)) {
+            $currentToken->delete();
+        }
 
         // Record the login
         $user->update([
