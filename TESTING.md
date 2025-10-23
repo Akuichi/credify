@@ -68,6 +68,9 @@ npm test
 - [ ] Enable 2FA by scanning QR code with Google Authenticator
 - [ ] Verify code works for 2FA activation
 - [ ] Test login flow with 2FA enabled
+   - [ ] Enter credentials and verify you're redirected to 2FA verification
+   - [ ] Enter correct verification code and verify you're redirected to dashboard
+   - [ ] Verify you remain logged in after page refresh
 - [ ] Test disabling 2FA
 
 #### Dashboard & Account Security
@@ -116,3 +119,5 @@ If you encounter issues with 2FA setup:
 
 - **500 Error on 2FA Setup**: This implementation uses SVG QR codes which don't require the PHP Imagick extension. If you modify the code to use PNG QR codes, make sure the Imagick extension is installed in your Docker container.
 - **2FA Code Not Working**: Ensure server and authenticator app time are in sync, as TOTP is time-based.
+- **Authentication Issues After 2FA**: The app uses a combination of cookie-based and token-based authentication. Make sure the token is properly stored and included in API requests.
+- **Logout Not Working**: If logout fails, try clearing local storage and cookies manually, then refresh the page.
