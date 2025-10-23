@@ -28,6 +28,11 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
 export function PublicRoute({ children }: { children: React.ReactNode }) {
   const { isAuthenticated, isLoading } = useAuth();
   const location = useLocation();
+  
+  // Check if the current route is a password reset related route
+  const isPasswordResetRoute = 
+    location.pathname === '/reset-password' || 
+    location.pathname === '/forgot-password';
 
   if (isLoading) {
     return (
@@ -37,8 +42,8 @@ export function PublicRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Always allow access to the reset-password page, even if authenticated
-  if (isAuthenticated && location.pathname !== '/reset-password' && !location.pathname.includes('/forgot-password')) {
+  // Only redirect authenticated users if they're not on a password reset route
+  if (isAuthenticated && !isPasswordResetRoute) {
     return <Navigate to={location.state?.from?.pathname || '/dashboard'} replace />;
   }
 

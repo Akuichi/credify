@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { validatePassword } from '../utils/validation';
+import api from '../api/axios';
 
 const ResetPassword: React.FC = () => {
   const { resetPassword, logout, isAuthenticated } = useAuth();
@@ -20,19 +21,18 @@ const ResetPassword: React.FC = () => {
 
   // Extract token and email from URL query parameters
   useEffect(() => {
-    // If the user is authenticated when reaching the reset password page, 
-    // log them out to ensure they can reset their password
-    const handleLogout = async () => {
+    // Clean up authentication state but don't redirect
+    const clearAuthState = async () => {
+      // Only clear token and auth state without full logout flow that causes redirects
       if (isAuthenticated) {
-        try {
-          await logout();
-        } catch (error) {
-          console.error('Error logging out:', error);
-        }
+        // Remove token from localStorage
+        localStorage.removeItem('auth_token');
+        // Remove Authorization header from default headers
+        delete api.defaults.headers.common['Authorization'];
       }
     };
     
-    handleLogout();
+    clearAuthState();
     
     const queryParams = new URLSearchParams(location.search);
     const token = queryParams.get('token');
@@ -47,7 +47,7 @@ const ResetPassword: React.FC = () => {
     } else {
       setError('Invalid or missing token. Please request a new password reset link.');
     }
-  }, [location, logout, isAuthenticated]);
+  }, [location, isAuthenticated]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
