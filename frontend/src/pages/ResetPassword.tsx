@@ -4,7 +4,7 @@ import { useAuth } from '../context/AuthContext';
 import { validatePassword } from '../utils/validation';
 
 const ResetPassword: React.FC = () => {
-  const { resetPassword } = useAuth();
+  const { resetPassword, logout, isAuthenticated } = useAuth();
   const [formData, setFormData] = useState({
     email: '',
     token: '',
@@ -20,6 +20,20 @@ const ResetPassword: React.FC = () => {
 
   // Extract token and email from URL query parameters
   useEffect(() => {
+    // If the user is authenticated when reaching the reset password page, 
+    // log them out to ensure they can reset their password
+    const handleLogout = async () => {
+      if (isAuthenticated) {
+        try {
+          await logout();
+        } catch (error) {
+          console.error('Error logging out:', error);
+        }
+      }
+    };
+    
+    handleLogout();
+    
     const queryParams = new URLSearchParams(location.search);
     const token = queryParams.get('token');
     const email = queryParams.get('email');
@@ -33,7 +47,7 @@ const ResetPassword: React.FC = () => {
     } else {
       setError('Invalid or missing token. Please request a new password reset link.');
     }
-  }, [location]);
+  }, [location, logout, isAuthenticated]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;

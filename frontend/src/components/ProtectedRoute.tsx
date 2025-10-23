@@ -37,7 +37,8 @@ export function PublicRoute({ children }: { children: React.ReactNode }) {
     );
   }
 
-  if (isAuthenticated) {
+  // Always allow access to the reset-password page, even if authenticated
+  if (isAuthenticated && location.pathname !== '/reset-password' && !location.pathname.includes('/forgot-password')) {
     return <Navigate to={location.state?.from?.pathname || '/dashboard'} replace />;
   }
 
