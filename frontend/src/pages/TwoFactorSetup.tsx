@@ -5,7 +5,7 @@ import { useAuth } from '../context/AuthContext';
 import { Button } from '../components/Form';
 
 export default function TwoFactorSetup() {
-  const { user, isAuthenticated } = useAuth();
+  const { user, isAuthenticated, getUser } = useAuth();
   const navigate = useNavigate();
   
   const [isLoading, setIsLoading] = useState(false);
@@ -53,6 +53,9 @@ export default function TwoFactorSetup() {
       await api.post('/api/2fa/verify', {
         code: verificationCode
       });
+      
+      // Update the user data immediately to reflect 2FA status change
+      await getUser();
       
       setSuccess('Two-factor authentication has been enabled successfully!');
       setSetupComplete(true);

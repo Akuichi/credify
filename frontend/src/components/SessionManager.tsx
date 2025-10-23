@@ -6,6 +6,7 @@ interface Session {
   name: string;
   created_at: string;
   last_used_at: string | null;
+  is_current?: boolean;
 }
 
 export default function SessionManager() {
@@ -92,10 +93,10 @@ export default function SessionManager() {
               </thead>
               <tbody className="bg-white divide-y divide-gray-200">
                 {sessions.map((session) => (
-                  <tr key={session.id} className={session.id === currentSession ? 'bg-blue-50' : ''}>
+                  <tr key={session.id} className={session.is_current ? 'bg-blue-50' : ''}>
                     <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
                       {session.name}
-                      {session.id === currentSession && (
+                      {session.is_current && (
                         <span className="ml-2 inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
                           Current
                         </span>
@@ -108,7 +109,7 @@ export default function SessionManager() {
                       {session.last_used_at ? new Date(session.last_used_at).toLocaleString() : 'N/A'}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {session.id !== currentSession && (
+                      {!session.is_current && (
                         <button
                           onClick={() => terminateSession(session.id)}
                           className="text-red-600 hover:text-red-900"

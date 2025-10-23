@@ -7,6 +7,8 @@ interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   verifyTwoFactor: (data: TwoFactorVerifyData) => Promise<void>;
+  sendVerificationEmail: () => Promise<void>;
+  checkVerificationStatus: () => Promise<boolean>;
   logout: () => Promise<void>;
   getUser: () => Promise<void>;
 }
@@ -149,6 +151,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
+  const sendVerificationEmail = async () => {
+    try {
+      await api.post('/api/email/verify/send');
+      return;
+    } catch (error: any) {
+      console.error('Failed to send verification email:', error);
+      throw new Error(error.response?.data?.message || 'Failed to send verification email');
+    }
+  };
+
+  // Dev verification method has been removed
+
+  const checkVerificationStatus = async (): Promise<boolean> => {
+    try {
+      const response = await api.get('/api/email/verify');
+      return response.data.verified;
+    } catch (error: any) {
+      console.error('Failed to check verification status:', error);
+      return false;
+    }
+  };
+
   const logout = async () => {
     try {
       await api.post('/api/logout');
@@ -190,6 +214,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         verifyTwoFactor,
+        sendVerificationEmail,
+        checkVerificationStatus,
         logout,
         getUser,
       }}

@@ -22,12 +22,15 @@ class RegisterController extends Controller
             'password' => Hash::make($validated['password']),
         ]);
 
+        // Send email verification
+        $user->sendEmailVerificationNotification();
+        
         // Log the user in for SPA and regenerate session
         Auth::login($user);
         $request->session()->regenerate();
 
         return response()->json([
-            'message' => 'User registered successfully',
+            'message' => 'User registered successfully. Please check your email for verification link.',
             'user' => $user,
         ], 201);
     }

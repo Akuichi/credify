@@ -7,6 +7,7 @@ import Register from './pages/Register'
 import Dashboard from './pages/Dashboard'
 import TwoFactorSetup from './pages/TwoFactorSetup'
 import TwoFactorVerify from './pages/TwoFactorVerify'
+import EmailVerified from './pages/EmailVerified'
 
 export default function App() {
   const { isAuthenticated, logout } = useAuth();
@@ -78,6 +79,7 @@ export default function App() {
               <TwoFactorVerify />
             </PublicRoute>
           } />
+          <Route path="/email-verified" element={<EmailVerified />} />
         </Routes>
       </main>
     </div>

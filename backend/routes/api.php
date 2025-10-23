@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\Auth\ProfileController;
 use App\Http\Controllers\Api\Auth\RegisterController;
 use App\Http\Controllers\Api\Auth\SessionController;
 use App\Http\Controllers\Api\Auth\TwoFactorAuthController;
+use App\Http\Controllers\Api\Auth\VerificationController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -17,6 +18,11 @@ use Illuminate\Support\Facades\Route;
 // Public routes - move to regular web middleware for proper session handling
 Route::post('/register', RegisterController::class)->middleware(['web', 'throttle:6,1']);
 Route::post('/login', LoginController::class)->middleware(['web', 'throttle:6,1']);
+
+// Email verification link route
+Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
+    ->middleware(['web', 'signed'])
+    ->name('verification.verify');
 
 // CSRF cookie route for SPA authentication 
 Route::get('/csrf-cookie', function() {
@@ -57,5 +63,12 @@ Route::middleware(['web', 'auth:sanctum'])->group(function () {
         Route::get('/', [SessionController::class, 'index']);
         Route::delete('/{id}', [SessionController::class, 'destroy']);
         Route::delete('/', [SessionController::class, 'destroyOthers']);
+    });
+    
+    // Email verification routes
+    Route::prefix('email')->group(function () {
+        Route::get('/verify', [VerificationController::class, 'status']);
+        Route::post('/verify/send', [VerificationController::class, 'sendVerificationEmail'])
+            ->middleware('throttle:6,1');
     });
 });

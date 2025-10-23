@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import api from '../api/axios';
+import { useAuth } from '../context/AuthContext';
 
 interface DisableTwoFactorProps {
   onSuccess: () => void;
@@ -7,6 +8,7 @@ interface DisableTwoFactorProps {
 }
 
 export default function DisableTwoFactor({ onSuccess, onCancel }: DisableTwoFactorProps) {
+  const { getUser } = useAuth();
   const [verificationCode, setVerificationCode] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,6 +26,10 @@ export default function DisableTwoFactor({ onSuccess, onCancel }: DisableTwoFact
     
     try {
       await api.post('/api/2fa/disable', { code: verificationCode });
+      
+      // Update the user data immediately to reflect 2FA status change
+      await getUser();
+      
       onSuccess();
     } catch (err: any) {
       setError(err.response?.data?.message || 'Failed to disable 2FA');

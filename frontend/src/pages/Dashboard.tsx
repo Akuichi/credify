@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 import SessionManager from '../components/SessionManager'
 import DisableTwoFactor from '../components/DisableTwoFactor'
+import EmailVerificationBanner from '../components/EmailVerificationBanner'
 
 export default function Dashboard() {
   const { user, getUser } = useAuth();
@@ -10,6 +11,7 @@ export default function Dashboard() {
 
   return (
     <div className="max-w-2xl mx-auto bg-white p-6 rounded shadow">
+      <EmailVerificationBanner className="mb-4" />
       <h2 className="text-xl font-bold mb-4">Welcome, {user?.full_name}!</h2>
       
       <div className="mt-6 space-y-4">
@@ -21,6 +23,7 @@ export default function Dashboard() {
               <p><span className="font-medium">Mobile:</span> {user?.mobile_number}</p>
             )}
             <p><span className="font-medium">2FA Status:</span> {user?.two_factor_enabled ? 'Enabled' : 'Disabled'}</p>
+            <p><span className="font-medium">Email Status:</span> {user?.email_verified_at ? 'Verified' : 'Not Verified'}</p>
           </div>
         </div>
 
