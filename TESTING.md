@@ -41,7 +41,25 @@ npm run dev
 
 Run the Laravel test suite:
 ```bash
+# Run all tests
 docker compose exec app php artisan test
+
+# Run specific test
+docker compose exec app php artisan test tests/Feature/PasswordValidationTest.php
+```
+
+#### Password Validation Tests
+
+We have a dedicated test file for password validation rules:
+- `tests/Feature/PasswordValidationTest.php` - Tests that the password requirements enforce:
+  - Minimum 8 characters
+  - Mixed case (uppercase and lowercase letters)
+  - Numbers
+  - Special symbols/characters
+
+To run just the password validation tests:
+```bash
+docker compose exec app php artisan test tests/Feature/PasswordValidationTest.php
 ```
 
 ### Frontend Testing
@@ -56,7 +74,13 @@ npm test
 
 #### User Registration
 - [ ] Attempt registration with valid details
-- [ ] Test validation errors (weak password, invalid email)
+- [ ] Test validation errors (invalid email)
+- [ ] Test password strength requirements:
+  - [ ] Verify passwords without uppercase letters are rejected
+  - [ ] Verify passwords without numbers are rejected
+  - [ ] Verify passwords without special characters are rejected
+  - [ ] Verify passwords shorter than 8 characters are rejected
+  - [ ] Verify strong passwords meeting all criteria are accepted
 - [ ] Verify user is created in the database
 
 #### Login
@@ -93,6 +117,12 @@ npm test
 ### CSRF Testing
 - [ ] Verify CSRF token is required for state-changing requests
 - [ ] Test cross-origin requests are properly handled
+
+### Password Security
+- [ ] Verify password hashing uses bcrypt
+- [ ] Test password validation rules enforce strong passwords
+- [ ] Verify password input fields don't show actual characters
+- [ ] Test password change functionality requires old password
 
 ### Session Security
 - [ ] Verify session cookies are HTTP-only

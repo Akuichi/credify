@@ -41,6 +41,14 @@ cd credify
 docker compose up --build
 ```
 
+3. For testing purposes, you may need to disable CSRF for API routes:
+```php
+// In app/Http/Middleware/VerifyCsrfToken.php
+protected $except = [
+    'api/*',
+];
+```
+
 3. Configure email settings in `.env`
 ```bash
 # Copy the example env file (if not already done)
