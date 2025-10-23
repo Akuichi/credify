@@ -96,6 +96,10 @@ export default function Register() {
             value={formData.password}
             onChange={handleChange}
           />
+          <div className="text-xs text-gray-600 -mt-3 mb-3">
+            Password must be at least 8 characters and include uppercase, lowercase, 
+            numbers, and special characters.
+          </div>
 
           <Input
             label="Confirm Password"
