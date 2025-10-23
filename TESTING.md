@@ -71,7 +71,10 @@ npm test
    - [ ] Enter credentials and verify you're redirected to 2FA verification
    - [ ] Enter correct verification code and verify you're redirected to dashboard
    - [ ] Verify you remain logged in after page refresh
-- [ ] Test disabling 2FA
+- [ ] Test disabling 2FA from the dashboard
+   - [ ] Click "Disable 2FA" button
+   - [ ] Enter verification code from authenticator app
+   - [ ] Verify 2FA is disabled after successful verification
 
 #### Dashboard & Account Security
 - [ ] Verify user information displays correctly
