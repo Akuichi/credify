@@ -1,0 +1,98 @@
+# Development and Testing Guide
+
+This document provides instructions for developers to work on and test the Credify application.
+
+## Development Setup
+
+### Prerequisites
+- Docker and Docker Compose installed
+- Git
+- A web browser (Chrome recommended for testing)
+
+### Local Development
+
+1. Clone the repository and start containers:
+```bash
+git clone https://github.com/Akuichi/credify.git
+cd credify
+docker compose up --build
+```
+
+2. Run migrations and seeders:
+```bash
+docker compose exec app php artisan migrate --seed
+```
+
+3. Frontend development:
+```bash
+# If you want to run frontend separately
+cd frontend
+npm install
+npm run dev
+```
+
+4. Access the development environment:
+   - Frontend: http://localhost:3000
+   - API: http://localhost:8000/api
+
+## Testing
+
+### Backend Testing
+
+Run the Laravel test suite:
+```bash
+docker compose exec app php artisan test
+```
+
+### Frontend Testing
+
+Run React component tests:
+```bash
+cd frontend
+npm test
+```
+
+### Manual Testing Checklist
+
+#### User Registration
+- [ ] Attempt registration with valid details
+- [ ] Test validation errors (weak password, invalid email)
+- [ ] Verify user is created in the database
+
+#### Login
+- [ ] Login with valid credentials
+- [ ] Test rate limiting by multiple failed attempts
+- [ ] Verify CSRF protection works
+
+#### Two-Factor Authentication
+- [ ] Enable 2FA by scanning QR code with Google Authenticator
+- [ ] Verify code works for 2FA activation
+- [ ] Test login flow with 2FA enabled
+- [ ] Test disabling 2FA
+
+#### Dashboard & Account Security
+- [ ] Verify user information displays correctly
+- [ ] Check last login information is accurate
+- [ ] Test updating user profile information
+
+#### Logout
+- [ ] Verify logout works and invalidates session
+- [ ] Test accessing protected routes after logout
+
+## Security Testing
+
+### CSRF Testing
+- [ ] Verify CSRF token is required for state-changing requests
+- [ ] Test cross-origin requests are properly handled
+
+### Session Security
+- [ ] Verify session cookies are HTTP-only
+- [ ] Test session expiration works as expected
+
+### 2FA Security
+- [ ] Verify 2FA cannot be bypassed
+- [ ] Test temporary token expiration for 2FA verification
+
+### API Security
+- [ ] Test that unauthenticated requests to protected endpoints are rejected
+- [ ] Verify rate limiting is working on auth endpoints
