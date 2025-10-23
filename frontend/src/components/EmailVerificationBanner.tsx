@@ -57,9 +57,6 @@ const EmailVerificationBanner: React.FC<EmailVerificationBannerProps> = ({ class
               <span className="ml-2 font-medium text-green-600">Verification email sent! Please check your inbox.</span>
             )}
           </p>
-          <p className="text-xs text-gray-500 mt-1">
-            In development mode, emails are logged to the Laravel log file.
-          </p>
           {error && <p className="mt-1 text-sm text-red-600">{error}</p>}
         </div>
       </div>
