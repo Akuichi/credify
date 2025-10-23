@@ -1,3 +1,22 @@
+# Laravel
+/vendor
+/node_modules
+/public/storage
+/storage/*.key
+/storage/framework/cache/data
+/storage/logs/*.log
+/.env
+.env.*.local
+
+# Frontend
+/frontend/node_modules
+/frontend/dist
+/frontend/.env
+/frontend/.env.*
+
+# OS files
+.DS_Store
+Thumbs.db
 /vendor
 /node_modules
 /.env
