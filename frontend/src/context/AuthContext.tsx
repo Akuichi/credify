@@ -36,6 +36,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Small delay to ensure cookie is set
         await new Promise(resolve => setTimeout(resolve, 300));
         
+        // Check for stored token
+        const storedToken = localStorage.getItem('auth_token');
+        console.log('Stored token exists:', !!storedToken);
+        
         console.log('Cookies after CSRF:', document.cookie);
         await getUser();
       } catch (error) {
@@ -45,6 +49,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           user: null,
           isAuthenticated: false,
         }));
+        
+        // Clear invalid token if authentication fails
+        localStorage.removeItem('auth_token');
+        delete api.defaults.headers.common['Authorization'];
       } finally {
         setState(prev => ({ ...prev, isLoading: false }));
       }
@@ -114,9 +122,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // During login flow verification (temp token provided from login response)
       if (state.needsTwoFactor && state.temporaryToken) {
-        await api.post('/api/login/verify', { code: data.code }, {
+        const response = await api.post('/api/login/verify', { code: data.code }, {
           headers: { Authorization: `Bearer ${state.temporaryToken}` }
         });
+        
+        console.log('2FA verification response:', response.data);
+        
+        // Store the permanent token from the response
+        if (response.data.token) {
+          // Store the token in local storage or in a more secure way if needed
+          localStorage.setItem('auth_token', response.data.token);
+          
+          // Update the axios default headers to include the token for future requests
+          api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
+        }
       } 
       // Regular 2FA verification for an already authenticated user
       else {
@@ -133,6 +152,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const logout = async () => {
     try {
       await api.post('/api/logout');
+      
+      // Clear auth token from storage and axios headers
+      localStorage.removeItem('auth_token');
+      delete api.defaults.headers.common['Authorization'];
+      
       setState({
         user: null,
         isAuthenticated: false,
@@ -143,6 +167,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       navigate('/login');
     } catch (error: any) {
       console.error('Logout failed:', error);
+      
+      // Even if the logout API call fails, clear state and tokens
+      localStorage.removeItem('auth_token');
+      delete api.defaults.headers.common['Authorization'];
+      
+      setState({
+        user: null,
+        isAuthenticated: false,
+        isLoading: false,
+        needsTwoFactor: false,
+        temporaryToken: undefined,
+      });
+      navigate('/login');
     }
   };
 
