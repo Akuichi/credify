@@ -71,36 +71,40 @@ cd credify
 cp backend/.env.example backend/.env
 ```
 
-3. Install composer dependencies (critical step)
+3. Create a backup of docker-compose.yml (optional)
 ```bash
-# Option 1: Install locally (recommended)
-cd backend
-composer install
-cd ..
+cp docker-compose.yml docker-compose.yml.bak
+```
 
-# Option 2: Install via Docker
+4. Build the Docker containers
+```bash
+docker compose build
+```
+
+5. Install composer dependencies
+```bash
 docker compose run --rm app composer install
 ```
 
-4. Build and start the Docker containers
-```bash
-docker compose up --build
-```
-
-5. In a new terminal, run the setup commands
+6. Set up the application
 ```bash
 # Generate application key
-docker compose exec app php artisan key:generate
+docker compose run --rm app php artisan key:generate
 
 # Create storage links
-docker compose exec app php artisan storage:link
+docker compose run --rm app php artisan storage:link
 
-# Run database migrations
-docker compose exec app php artisan migrate --seed
+# Run database migrations with fresh tables
+docker compose run --rm app php artisan migrate:fresh --seed
 
 # Clear cache
-docker compose exec app php artisan cache:clear
-docker compose exec app php artisan config:cache
+docker compose run --rm app php artisan cache:clear
+docker compose run --rm app php artisan config:cache
+```
+
+7. Start the application
+```bash
+docker compose up
 ```
 
 6. Configure email settings in `.env`
@@ -184,6 +188,22 @@ MAIL_SENDGRID_API_KEY=your_sendgrid_api_key_here
 MAIL_FROM_ADDRESS="noreply@yourdomain.com"
 MAIL_FROM_NAME="${APP_NAME}"
 ```
+
+### Important: Clearing Cache After Email Configuration Changes
+
+After making any changes to your email configuration in the `.env` file, you must clear Laravel's configuration cache for the changes to take effect:
+
+```bash
+# If running locally
+php artisan config:clear
+php artisan config:cache
+
+# If using Docker
+docker compose exec app php artisan config:clear
+docker compose exec app php artisan config:cache
+```
+
+Failure to clear the cache may result in Laravel using the old email configuration values instead of your updated settings.
 
 ## Security Features
 
