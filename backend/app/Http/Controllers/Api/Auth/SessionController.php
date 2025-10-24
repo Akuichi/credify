@@ -5,55 +5,93 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class SessionController extends Controller
 {
+    /**
+     * Parse user agent to extract device/browser info
+     */
+    private function parseUserAgent(?string $userAgent): array
+    {
+        if (!$userAgent) {
+            return ['name' => 'Unknown', 'type' => 'unknown'];
+        }
+
+        // Detect browser
+        $browser = 'Unknown';
+        if (preg_match('/Edge\/([\d.]+)/', $userAgent)) {
+            $browser = 'Microsoft Edge';
+        } elseif (preg_match('/Edg\/([\d.]+)/', $userAgent)) {
+            $browser = 'Microsoft Edge';
+        } elseif (preg_match('/Chrome\/([\d.]+)/', $userAgent) && !preg_match('/Edg/', $userAgent)) {
+            $browser = 'Google Chrome';
+        } elseif (preg_match('/Safari\/([\d.]+)/', $userAgent) && !preg_match('/Chrome/', $userAgent)) {
+            $browser = 'Safari';
+        } elseif (preg_match('/Firefox\/([\d.]+)/', $userAgent)) {
+            $browser = 'Mozilla Firefox';
+        } elseif (preg_match('/MSIE|Trident/', $userAgent)) {
+            $browser = 'Internet Explorer';
+        }
+
+        // Detect OS/Device
+        $device = 'Unknown';
+        if (preg_match('/Windows NT ([\d.]+)/', $userAgent)) {
+            $device = 'Windows';
+        } elseif (preg_match('/Mac OS X/', $userAgent)) {
+            $device = 'macOS';
+        } elseif (preg_match('/Linux/', $userAgent)) {
+            $device = 'Linux';
+        } elseif (preg_match('/iPhone/', $userAgent)) {
+            $device = 'iPhone';
+        } elseif (preg_match('/iPad/', $userAgent)) {
+            $device = 'iPad';
+        } elseif (preg_match('/Android/', $userAgent)) {
+            $device = 'Android';
+        }
+
+        return [
+            'name' => "{$browser} on {$device}",
+            'browser' => $browser,
+            'device' => $device,
+            'type' => preg_match('/Mobile|Android|iPhone|iPad/', $userAgent) ? 'mobile' : 'desktop'
+        ];
+    }
+
     /**
      * Get all active sessions for the authenticated user
      */
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
-        $currentToken = $user->currentAccessToken();
-        $isCurrentTokenTransient = $currentToken instanceof \Laravel\Sanctum\TransientToken;
+        $currentSessionId = $request->session()->getId();
         
-        // Get all active tokens
-        $sessions = $user->tokens()->get();
+        // Get all active sessions for this user from database
+        $sessions = DB::table('sessions')
+            ->where('user_id', $user->id)
+            ->orderBy('last_activity', 'desc')
+            ->get();
         
-        // Format session data to exclude sensitive information
-        $formattedSessions = $sessions->map(function($token) use ($isCurrentTokenTransient, $request) {
-            $isCurrent = false;
-            
-            // If using API tokens, mark current token
-            if (!$isCurrentTokenTransient && $token->id === $request->user()->currentAccessToken()->id) {
-                $isCurrent = true;
-            }
+        // Format session data
+        $formattedSessions = $sessions->map(function($session) use ($currentSessionId) {
+            $isCurrent = $session->id === $currentSessionId;
+            $deviceInfo = $this->parseUserAgent($session->user_agent);
             
             return [
-                'id' => $token->id,
-                'name' => $token->name,
-                'created_at' => $token->created_at,
-                'last_used_at' => $token->last_used_at,
+                'id' => $session->id,
+                'name' => $deviceInfo['name'],
+                'browser' => $deviceInfo['browser'] ?? 'Unknown',
+                'device' => $deviceInfo['device'] ?? 'Unknown',
+                'type' => $deviceInfo['type'] ?? 'unknown',
+                'ip_address' => $session->ip_address,
+                'created_at' => date('Y-m-d H:i:s', $session->last_activity),
+                'last_used_at' => date('Y-m-d H:i:s', $session->last_activity),
                 'is_current' => $isCurrent,
             ];
         });
-        
-        // Add browser session information if we're using a session
-        if ($isCurrentTokenTransient) {
-            $browserSession = [
-                'id' => 'current-browser-session',
-                'name' => 'Current browser session',
-                'created_at' => now(),
-                'last_used_at' => now(),
-                'is_current' => true,
-            ];
-            
-            $formattedSessions->prepend($browserSession);
-        }
 
-        // Return also the current session ID
         return response()->json([
-            'current_session' => $request->session()->getId(),
+            'current_session' => $currentSessionId,
             'sessions' => $formattedSessions,
         ]);
     }
@@ -64,16 +102,22 @@ class SessionController extends Controller
     public function destroy(Request $request, string $id): JsonResponse
     {
         $user = $request->user();
+        $currentSessionId = $request->session()->getId();
         
-        // Find the token
-        $token = $user->tokens()->find($id);
-        
-        if (!$token) {
-            return response()->json(['message' => 'Session not found'], 404);
+        // Prevent deleting current session
+        if ($id === $currentSessionId) {
+            return response()->json(['message' => 'Cannot terminate current session'], 400);
         }
         
-        // Revoke the token
-        $token->delete();
+        // Delete the session
+        $deleted = DB::table('sessions')
+            ->where('id', $id)
+            ->where('user_id', $user->id)
+            ->delete();
+        
+        if (!$deleted) {
+            return response()->json(['message' => 'Session not found'], 404);
+        }
 
         return response()->json(['message' => 'Session terminated successfully']);
     }
@@ -84,19 +128,13 @@ class SessionController extends Controller
     public function destroyOthers(Request $request): JsonResponse
     {
         $user = $request->user();
-        $currentToken = $user->currentAccessToken();
+        $currentSessionId = $request->session()->getId();
         
-        // If we're using a session (TransientToken), just delete all tokens
-        // If we're using a token, delete all other tokens
-        if ($currentToken instanceof \Laravel\Sanctum\TransientToken) {
-            // Using session authentication, delete all tokens
-            $user->tokens()->delete();
-        } else {
-            // Using token authentication, delete all except current
-            $user->tokens()
-                ->where('id', '!=', $currentToken->id)
-                ->delete();
-        }
+        // Delete all sessions except the current one
+        DB::table('sessions')
+            ->where('user_id', $user->id)
+            ->where('id', '!=', $currentSessionId)
+            ->delete();
 
         return response()->json(['message' => 'All other sessions terminated']);
     }

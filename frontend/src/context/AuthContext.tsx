@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../api/axios';
 import { User, AuthState, LoginCredentials, RegisterData, TwoFactorVerifyData } from '../types/auth';
+import { showToast } from '../utils/toast.tsx';
 
 interface AuthContextType extends AuthState {
   login: (credentials: LoginCredentials) => Promise<void>;
@@ -13,6 +14,7 @@ interface AuthContextType extends AuthState {
   getUser: () => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (data: { email: string; token: string; password: string; password_confirmation: string }) => Promise<void>;
+  isLoggingOut: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -26,6 +28,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     needsTwoFactor: false,
     temporaryToken: undefined,
   });
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   // Get CSRF cookie and check auth status on mount
   useEffect(() => {
@@ -100,15 +103,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           needsTwoFactor: true,
           temporaryToken: data.temp_token,
         }));
+        showToast.success('Please enter your 2FA code');
         navigate('/2fa-verify');
         return;
       }
 
       await getUser();
+      showToast.success('Welcome back!');
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
-      throw new Error(error.response?.data?.message || 'Login failed');
+      const errorMessage = error.response?.data?.message || 'Login failed';
+      showToast.error(errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
@@ -116,9 +123,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await api.post('/api/register', data);
       await getUser();
+      showToast.success('Account created successfully!');
       navigate('/dashboard');
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || 'Registration failed');
+      const errorMessage = error.response?.data?.message || 'Registration failed';
+      showToast.error(errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
@@ -176,6 +186,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = async () => {
+    setIsLoggingOut(true);
     try {
       await api.post('/api/logout');
       
@@ -190,6 +201,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         needsTwoFactor: false,
         temporaryToken: undefined,
       });
+      showToast.success('Logged out successfully');
       navigate('/login');
     } catch (error: any) {
       console.error('Logout failed:', error);
@@ -206,6 +218,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         temporaryToken: undefined,
       });
       navigate('/login');
+    } finally {
+      setIsLoggingOut(false);
     }
   };
 
@@ -256,6 +270,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         getUser,
         forgotPassword,
         resetPassword,
+        isLoggingOut,
       }}
     >
       {children}

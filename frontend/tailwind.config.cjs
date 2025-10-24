@@ -3,6 +3,7 @@ module.exports = {
     './index.html',
     './src/**/*.{ts,tsx,js,jsx}',
   ],
+  darkMode: 'class', // Enable dark mode with class strategy
   theme: {
     extend: {},
   },
