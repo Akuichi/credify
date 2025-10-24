@@ -7,8 +7,8 @@ Frontend (React + Vite + Tailwind) scaffold
 Local setup
 
 1. cd frontend
-2. npm install
-3. npm run dev
+2. yarn install
+3. yarn dev
 
 Notes
 

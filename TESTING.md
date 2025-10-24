@@ -27,8 +27,8 @@ docker compose exec app php artisan migrate --seed
 ```bash
 # If you want to run frontend separately
 cd frontend
-npm install
-npm run dev
+yarn install
+yarn dev
 ```
 
 4. Access the development environment:
@@ -81,7 +81,7 @@ docker compose exec app php artisan test tests/Feature/Auth/PasswordResetTest.ph
 Run React component tests:
 ```bash
 cd frontend
-npm test
+yarn test
 ```
 
 ### Manual Testing Checklist

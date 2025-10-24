@@ -1,0 +1,48 @@
+services:
+  app:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: credify_app
+    working_dir: /var/www
+    volumes:
+      - ./backend:/var/www
+      - ./backend/vendor:/var/www/vendor
+      - ./backend/node_modules:/var/www/node_modules
+    environment:
+      - APP_ENV=local
+      - APP_DEBUG=true
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  frontend:
+    image: node:20-alpine
+    container_name: credify_frontend
+    working_dir: /usr/src/app
+    volumes:
+      - ./frontend:/usr/src/app
+      - /usr/src/app/node_modules
+    ports:
+      - "3000:3000"
+    command: sh -lc "yarn install && yarn dev --host 0.0.0.0 --port 3000"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
+    depends_on:
+      - app
+
+  db:
+    image: postgres:15
+    container_name: credify_db
+    environment:
+      POSTGRES_DB: credify
+      POSTGRES_USER: credify
+      POSTGRES_PASSWORD: credify_password
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+
+volumes:
+  db_data:
