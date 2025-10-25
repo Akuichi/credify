@@ -43,21 +43,21 @@ export const StatCard: React.FC<StatCardProps> = ({ icon, label, value, trend, c
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-4 sm:p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow"
+      className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-3 sm:p-4 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-shadow"
     >
       <div className="flex items-start justify-between">
         <div className="flex-1">
-          <div className={`w-12 h-12 ${colors.bg} rounded-xl flex items-center justify-center mb-4`}>
+          <div className={`w-10 h-10 ${colors.bg} rounded-lg flex items-center justify-center mb-3`}>
             <div className={colors.icon}>{icon}</div>
           </div>
           
-          <p className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-1">{label}</p>
-          <p className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
+          <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">{label}</p>
+          <p className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-gray-100">{value}</p>
           
           {trend && (
             <div className="flex items-center mt-2">
               <svg
-                className={`w-4 h-4 mr-1 ${
+                className={`w-3.5 h-3.5 mr-1 ${
                   trend.isPositive ? 'text-green-500' : 'text-red-500'
                 } ${trend.isPositive ? '' : 'rotate-180'}`}
                 fill="currentColor"
@@ -70,7 +70,7 @@ export const StatCard: React.FC<StatCardProps> = ({ icon, label, value, trend, c
                 />
               </svg>
               <span
-                className={`text-sm font-medium ${
+                className={`text-xs font-medium ${
                   trend.isPositive ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'
                 }`}
               >

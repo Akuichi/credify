@@ -44,20 +44,20 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ actions }) => {
       variants={containerVariants}
       initial="hidden"
       animate="show"
-      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4"
+      className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3"
     >
       {actions.map((action, index) => {
         const content = (
           <>
-            <div className="flex-shrink-0 w-12 h-12 bg-white/20 rounded-xl flex items-center justify-center backdrop-blur-sm">
+            <div className="flex-shrink-0 w-10 h-10 bg-white/20 rounded-lg flex items-center justify-center backdrop-blur-sm">
               {action.icon}
             </div>
             <div className="flex-1 min-w-0">
-              <h3 className="font-semibold text-lg mb-1">{action.label}</h3>
-              <p className="text-sm text-white/90 line-clamp-2">{action.description}</p>
+              <h3 className="font-semibold text-base mb-0.5">{action.label}</h3>
+              <p className="text-xs text-white/90 line-clamp-2">{action.description}</p>
             </div>
             <svg
-              className="w-5 h-5 flex-shrink-0 transform group-hover:translate-x-1 transition-transform"
+              className="w-4 h-4 flex-shrink-0 transform group-hover:translate-x-1 transition-transform"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -72,14 +72,14 @@ export const QuickActions: React.FC<QuickActionsProps> = ({ actions }) => {
             {action.to ? (
               <Link
                 to={action.to}
-                className={`group relative bg-gradient-to-r ${colorClasses[action.color]} text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-start space-x-4 min-h-[44px] w-full`}
+                className={`group relative bg-gradient-to-r ${colorClasses[action.color]} text-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-start space-x-3 min-h-[44px] w-full`}
               >
                 {content}
               </Link>
             ) : (
               <button
                 onClick={action.onClick}
-                className={`group relative bg-gradient-to-r ${colorClasses[action.color]} text-white rounded-2xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-start space-x-4 min-h-[44px] w-full text-left`}
+                className={`group relative bg-gradient-to-r ${colorClasses[action.color]} text-white rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105 active:scale-95 flex items-start space-x-3 min-h-[44px] w-full text-left`}
               >
                 {content}
               </button>

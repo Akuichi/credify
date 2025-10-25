@@ -55,6 +55,8 @@ Route::middleware(['web', 'auth:sanctum'])->group(function () {
     // Profile routes
     Route::get('/user', [ProfileController::class, 'show']);
     Route::patch('/user', [ProfileController::class, 'update']);
+    Route::put('/auth/profile', [ProfileController::class, 'updateProfile']);
+    Route::put('/auth/password', [ProfileController::class, 'updatePassword']);
     
     // 2FA management routes
     Route::prefix('2fa')->group(function () {

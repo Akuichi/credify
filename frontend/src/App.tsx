@@ -2,12 +2,14 @@ import React, { Suspense, lazy } from 'react'
 import { Routes, Route, Link } from 'react-router-dom'
 import { useAuth } from './context/AuthContext'
 import { ProtectedRoute, PublicRoute } from './components/ProtectedRoute'
+import { Sidebar } from './components/Sidebar'
 import MobileMenu from './components/MobileMenu'
 import { UserDropdown } from './components/UserDropdown'
 import { NotificationCenter, Notification } from './components/NotificationCenter'
 import { Breadcrumbs } from './components/Breadcrumbs'
 import { ThemeToggle } from './components/ThemeToggle'
 import { PageTransition } from './components/PageTransition'
+import { ProfileUpdateModal } from './components/ProfileUpdateModal'
 import ErrorBoundary from './components/ErrorBoundary'
 
 // Lazy load page components for better performance
@@ -34,6 +36,7 @@ const PageLoader = () => (
 export default function App() {
   const { isAuthenticated, logout, user, isLoading, isLoggingOut } = useAuth();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = React.useState(false);
+  const [showProfileModal, setShowProfileModal] = React.useState(false);
   
   // Load notifications from localStorage or use defaults - user-specific
   const getInitialNotifications = (): Notification[] => {
@@ -197,16 +200,23 @@ export default function App() {
         isLoading={isLoading}
       />
       
-      <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-8" role="main">
-        {/* Breadcrumbs - Only show when authenticated */}
-        {isAuthenticated && <Breadcrumbs />}
+      {/* Main Layout with Sidebar */}
+      <div className="flex min-h-[calc(100vh-4rem)]">
+        {/* Sidebar - Only show when authenticated */}
+        {isAuthenticated && <Sidebar onProfileClick={() => setShowProfileModal(true)} />}
         
-        <Suspense fallback={<PageLoader />}>
-          <Routes>
-            <Route path="/" element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
+        {/* Main Content */}
+        <main className={`flex-1 ${isAuthenticated ? 'lg:ml-0' : ''} overflow-x-hidden`} role="main">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            {/* Breadcrumbs - Only show when authenticated */}
+            {isAuthenticated && <Breadcrumbs />}
+            
+            <Suspense fallback={<PageLoader />}>
+              <Routes>
+                <Route path="/" element={
+                  <ProtectedRoute>
+                    <Dashboard />
+                  </ProtectedRoute>
             } />
             <Route path="/dashboard" element={
               <ProtectedRoute>
@@ -238,6 +248,11 @@ export default function App() {
                 <EmailVerified />
               </ProtectedRoute>
             } />
+            <Route path="/email-verified" element={
+              <ProtectedRoute>
+                <EmailVerified />
+              </ProtectedRoute>
+            } />
             <Route path="/admin/email-settings" element={
               <ProtectedRoute>
                 <AdminEmailSettings />
@@ -255,7 +270,15 @@ export default function App() {
             } />
           </Routes>
         </Suspense>
-      </main>
+          </div>
+        </main>
+      </div>
+
+      {/* Profile Update Modal */}
+      <ProfileUpdateModal
+        isOpen={showProfileModal}
+        onClose={() => setShowProfileModal(false)}
+      />
     </div>
     </ErrorBoundary>
   );
