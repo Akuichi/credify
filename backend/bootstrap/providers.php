@@ -2,5 +2,6 @@
 
 return [
     App\Providers\AppServiceProvider::class,
-    App\Providers\SessionServiceProvider::class,
+    // Temporarily disabled - causing 500 errors
+    // App\Providers\SessionServiceProvider::class,
 ];
