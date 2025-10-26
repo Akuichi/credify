@@ -64,6 +64,10 @@ class SessionController extends Controller
     public function index(Request $request): JsonResponse
     {
         $user = $request->user();
+        
+        // Force save the current session to database before querying
+        $request->session()->save();
+        
         $currentSessionId = $request->session()->getId();
         
         // Get all active sessions for this user from database

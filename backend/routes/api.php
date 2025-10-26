@@ -57,6 +57,8 @@ Route::middleware(['web', 'auth:sanctum'])->group(function () {
     Route::patch('/user', [ProfileController::class, 'update']);
     Route::put('/auth/profile', [ProfileController::class, 'updateProfile']);
     Route::put('/auth/password', [ProfileController::class, 'updatePassword']);
+    Route::put('/auth/change-password', [ProfileController::class, 'updatePassword']);
+    Route::post('/auth/verify-password', [\App\Http\Controllers\AuthController::class, 'verifyPassword']);
     
     // 2FA management routes
     Route::prefix('2fa')->group(function () {

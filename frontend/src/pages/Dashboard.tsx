@@ -10,12 +10,16 @@ import { StatCard } from '../components/StatCard'
 import { QuickActions } from '../components/QuickActions'
 import { ActivityTimeline, ActivityItem } from '../components/ActivityTimeline'
 import { ProfileUpdateModal } from '../components/ProfileUpdateModal'
+import { PasswordConfirmModal } from '../components/PasswordConfirmModal'
+import { TwoFactorSetupModal } from '../components/TwoFactorSetupModal'
 
 export default function Dashboard() {
   const { user, getUser } = useAuth();
   const [showDisable2FA, setShowDisable2FA] = useState(false);
   const [showConfirmDisable, setShowConfirmDisable] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
+  const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
+  const [show2FAModal, setShow2FAModal] = useState(false);
   const [currentSessionIp, setCurrentSessionIp] = useState<string | null>(null);
 
   // Fetch current session IP if last_login_ip is not available
@@ -61,6 +65,16 @@ export default function Dashboard() {
     },
   ];
 
+  // Handlers for 2FA setup
+  const handle2FASetup = () => {
+    setShowPasswordConfirm(true);
+  };
+
+  const handlePasswordConfirmed = () => {
+    setShowPasswordConfirm(false);
+    setShow2FAModal(true);
+  };
+
   // Quick actions
   const quickActions = [
     {
@@ -71,19 +85,8 @@ export default function Dashboard() {
       ),
       label: 'Enable 2FA',
       description: 'Add an extra layer of security to your account',
-      to: '/2fa-setup',
+      onClick: handle2FASetup,
       color: 'purple' as const,
-    },
-    {
-      icon: (
-        <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-        </svg>
-      ),
-      label: 'Email Settings',
-      description: 'Manage your email preferences',
-      to: '/admin/email-settings',
-      color: 'blue' as const,
     },
     {
       icon: (
@@ -224,12 +227,6 @@ export default function Dashboard() {
                     Not Verified
                   </span>
                 )}
-                <Link 
-                  to="/admin/email-settings" 
-                  className="inline-flex items-center min-h-[44px] px-3 py-2 text-xs text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium"
-                >
-                  Email Settings →
-                </Link>
               </div>
             </div>
             
@@ -372,6 +369,21 @@ export default function Dashboard() {
       <ProfileUpdateModal 
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
+      />
+
+      {/* Password Confirmation Modal */}
+      <PasswordConfirmModal
+        isOpen={showPasswordConfirm}
+        onClose={() => setShowPasswordConfirm(false)}
+        onSuccess={handlePasswordConfirmed}
+        title="Verify Your Password"
+        message="Please enter your password to proceed with enabling Two-Factor Authentication."
+      />
+
+      {/* 2FA Setup Modal */}
+      <TwoFactorSetupModal
+        isOpen={show2FAModal}
+        onClose={() => setShow2FAModal(false)}
       />
     </div>
   )

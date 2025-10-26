@@ -159,4 +159,23 @@ class AuthController extends Controller
 
         return response()->json(['token' => $token, 'user' => $user]);
     }
+
+    public function verifyPassword(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'password' => 'required|string',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json(['errors' => $validator->errors()], 422);
+        }
+
+        $user = $request->user();
+
+        if (!Hash::check($request->password, $user->password)) {
+            return response()->json(['message' => 'Incorrect password'], 401);
+        }
+
+        return response()->json(['message' => 'Password verified']);
+    }
 }

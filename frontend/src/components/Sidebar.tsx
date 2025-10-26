@@ -10,6 +10,7 @@ interface NavItem {
   icon: React.ReactNode;
   badge?: string | number;
   badgeColor?: 'red' | 'blue' | 'green';
+  tooltip?: string;
   onClick?: () => void;
 }
 
@@ -24,7 +25,10 @@ interface SidebarProps {
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({ onProfileClick }) => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
+  // Start collapsed on mobile, open on desktop
+  const [isCollapsed, setIsCollapsed] = useState(() => {
+    return window.innerWidth < 1024; // lg breakpoint
+  });
   const [isCompactMode, setIsCompactMode] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
   const [activeSessions, setActiveSessions] = useState(0);
@@ -50,6 +54,30 @@ export const Sidebar: React.FC<SidebarProps> = ({ onProfileClick }) => {
       return () => clearInterval(interval);
     }
   }, [user]);
+
+  // Handle window resize - open sidebar on desktop, close on mobile
+  useEffect(() => {
+    const handleResize = () => {
+      const isMobile = window.innerWidth < 1024;
+      if (!isMobile && isCollapsed) {
+        // If transitioning to desktop and sidebar is collapsed, open it
+        setIsCollapsed(false);
+      }
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, [isCollapsed]);
+
+  // Listen for toggle event from navbar
+  useEffect(() => {
+    const handleToggleSidebar = () => {
+      setIsCollapsed(false);
+    };
+
+    window.addEventListener('toggleSidebar', handleToggleSidebar);
+    return () => window.removeEventListener('toggleSidebar', handleToggleSidebar);
+  }, []);
 
   // Check for new activity (simplified - you can enhance this)
   useEffect(() => {
@@ -98,73 +126,34 @@ export const Sidebar: React.FC<SidebarProps> = ({ onProfileClick }) => {
       ],
     },
     {
-      title: 'Security',
-      collapsible: true,
-      items: [
-        {
-          label: 'Two-Factor Auth',
-          path: '/2fa-setup',
-          icon: (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-            </svg>
-          ),
-          badge: user?.two_factor_enabled ? undefined : '!',
-          badgeColor: 'red',
-        },
-        {
-          label: 'Active Sessions',
-          path: '/dashboard#sessions',
-          icon: (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-            </svg>
-          ),
-          badge: activeSessions > 0 ? activeSessions : undefined,
-          badgeColor: 'blue',
-        },
-        {
-          label: 'Login History',
-          path: '/dashboard#activity',
-          icon: (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-            </svg>
-          ),
-          badge: hasNewActivity ? '●' : undefined,
-          badgeColor: 'green',
-        },
-      ],
-    },
-    {
       title: 'Settings',
       collapsible: true,
       items: [
         {
-          label: 'Email Settings',
-          path: '/admin/email-settings',
+          label: 'Account & Security',
+          path: '/settings',
           icon: (
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
             </svg>
           ),
-          badge: !user?.email_verified_at ? '!' : undefined,
+          badge: (!user?.email_verified_at || !user?.two_factor_enabled) ? '!' : undefined,
           badgeColor: 'red',
-        },
-        {
-          label: 'Profile',
-          icon: (
-            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-            </svg>
-          ),
-          onClick: onProfileClick,
+          tooltip: (!user?.email_verified_at || !user?.two_factor_enabled) 
+            ? `Action required: ${!user?.two_factor_enabled ? 'Enable 2FA' : ''}${!user?.email_verified_at && !user?.two_factor_enabled ? ' & ' : ''}${!user?.email_verified_at ? 'Verify email' : ''}`
+            : undefined,
         },
       ],
     },
   ];
 
   const handleNavClick = (path: string) => {
+    // Auto-close sidebar on mobile after navigation
+    if (window.innerWidth < 1024) {
+      setIsCollapsed(true);
+    }
+    
     if (path.includes('#')) {
       const [route, hash] = path.split('#');
       if (location.pathname === route) {
@@ -344,7 +333,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onProfileClick }) => {
                               key={item.label}
                               to={item.path}
                               onClick={() => handleNavClick(item.path!)}
-                              title={isCompactMode ? item.label : undefined}
+                              title={item.tooltip || (isCompactMode ? item.label : undefined)}
                               className={className}
                             >
                               {content}
@@ -353,7 +342,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ onProfileClick }) => {
                             <button
                               key={item.label}
                               onClick={item.onClick}
-                              title={isCompactMode ? item.label : undefined}
+                              title={item.tooltip || (isCompactMode ? item.label : undefined)}
                               className={`${className} w-full text-left`}
                             >
                               {content}
@@ -441,18 +430,6 @@ export const Sidebar: React.FC<SidebarProps> = ({ onProfileClick }) => {
           </div>
         </div>
       </motion.aside>
-
-      {/* Toggle Button (visible when collapsed) */}
-      {isCollapsed && (
-        <button
-          onClick={() => setIsCollapsed(false)}
-          className="fixed top-4 left-4 z-40 p-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors lg:hidden"
-        >
-          <svg className="w-6 h-6 text-gray-600 dark:text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-          </svg>
-        </button>
-      )}
     </>
   );
 };

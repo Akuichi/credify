@@ -16,6 +16,7 @@ import ErrorBoundary from './components/ErrorBoundary'
 const Login = lazy(() => import('./pages/Login'))
 const Register = lazy(() => import('./pages/Register'))
 const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Settings = lazy(() => import('./pages/Settings'))
 const TwoFactorSetup = lazy(() => import('./pages/TwoFactorSetup'))
 const TwoFactorVerify = lazy(() => import('./pages/TwoFactorVerify'))
 const EmailVerified = lazy(() => import('./pages/EmailVerified'))
@@ -127,7 +128,24 @@ export default function App() {
       <nav className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-md shadow-sm border-b border-gray-200 dark:border-gray-700 sticky top-0 z-50" role="navigation" aria-label="Main navigation">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
-            <div className="flex items-center">
+            <div className="flex items-center space-x-3">
+              {/* Sidebar Toggle Button (Mobile Only) */}
+              {isAuthenticated && (
+                <button
+                  onClick={() => {
+                    // This will trigger the sidebar to open
+                    const event = new CustomEvent('toggleSidebar');
+                    window.dispatchEvent(event);
+                  }}
+                  className="md:hidden p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  aria-label="Open sidebar"
+                >
+                  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                </button>
+              )}
+              
               <Link 
                 to="/" 
                 className="flex items-center space-x-2 text-2xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 rounded-lg"
@@ -140,9 +158,24 @@ export default function App() {
               </Link>
             </div>
             
-            {/* Desktop Navigation */}
-            <div className="hidden md:flex items-center space-x-4">
-              <ThemeToggle />
+            {/* Mobile & Desktop Navigation */}
+            <div className="flex items-center space-x-2 sm:space-x-4">
+              {/* Mobile Navigation (show when authenticated) */}
+              {isAuthenticated && (
+                <div className="flex md:hidden items-center space-x-2">
+                  <NotificationCenter
+                    notifications={notifications}
+                    onMarkAsRead={handleMarkAsRead}
+                    onMarkAllAsRead={handleMarkAllAsRead}
+                    onClear={handleClearNotification}
+                  />
+                  <ThemeToggle />
+                </div>
+              )}
+              
+              {/* Desktop Navigation */}
+              <div className="hidden md:flex items-center space-x-4">
+                <ThemeToggle />
               {isAuthenticated ? (
                 <>
                   <NotificationCenter
@@ -171,21 +204,24 @@ export default function App() {
                   </Link>
                 </>
               ) : null}
-            </div>
-            
-            {/* Mobile Menu Button */}
-            <div className="md:hidden flex items-center space-x-2">
-              <ThemeToggle />
-              <button
-                onClick={() => setIsMobileMenuOpen(true)}
-                className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                aria-label="Open menu"
-                aria-expanded={isMobileMenuOpen}
-              >
-                <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                </svg>
-              </button>
+              </div>
+              
+              {/* Mobile Menu Button (Only for non-authenticated users) */}
+              {!isAuthenticated && (
+                <div className="md:hidden flex items-center space-x-2">
+                  <ThemeToggle />
+                  <button
+                    onClick={() => setIsMobileMenuOpen(true)}
+                    className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    aria-label="Open menu"
+                    aria-expanded={isMobileMenuOpen}
+                  >
+                    <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                    </svg>
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </div>
@@ -201,7 +237,7 @@ export default function App() {
       />
       
       {/* Main Layout with Sidebar */}
-      <div className="flex min-h-[calc(100vh-4rem)]">
+      <div className="flex">
         {/* Sidebar - Only show when authenticated */}
         {isAuthenticated && <Sidebar onProfileClick={() => setShowProfileModal(true)} />}
         
@@ -221,6 +257,11 @@ export default function App() {
             <Route path="/dashboard" element={
               <ProtectedRoute>
                 <Dashboard />
+              </ProtectedRoute>
+            } />
+            <Route path="/settings" element={
+              <ProtectedRoute>
+                <Settings />
               </ProtectedRoute>
             } />
             <Route path="/login" element={
@@ -263,7 +304,7 @@ export default function App() {
                 <ForgotPassword />
               </PublicRoute>
             } />
-            <Route path="/reset-password/:token" element={
+            <Route path="/reset-password" element={
               <PublicRoute>
                 <ResetPassword />
               </PublicRoute>

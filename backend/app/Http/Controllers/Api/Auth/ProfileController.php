@@ -21,7 +21,10 @@ class ProfileController extends Controller
             'session_has_data' => $request->session()->all(),
         ]);
         
-        return response()->json($request->user());
+        // Force fresh data from database
+        $user = $request->user()->fresh();
+        
+        return response()->json($user);
     }
 
     public function update(Request $request): JsonResponse
@@ -49,14 +52,43 @@ class ProfileController extends Controller
             'mobile_number' => ['nullable', 'string', 'max:20'],
         ]);
 
-        // If email is changed, mark as unverified
+        // If email is changed, mark as unverified and send verification email
         $emailChanged = false;
+        Log::info('Profile update', [
+            'old_email' => $user->email,
+            'new_email' => $validated['email'],
+            'email_verified_at_before' => $user->email_verified_at,
+        ]);
+        
         if ($validated['email'] !== $user->email) {
-            $validated['email_verified_at'] = null;
             $emailChanged = true;
+            Log::info('Email changed, marking as unverified');
         }
 
-        $user->update($validated);
+        // Update basic fields
+        $user->update([
+            'full_name' => $validated['full_name'],
+            'email' => $validated['email'],
+            'mobile_number' => $validated['mobile_number'],
+        ]);
+        
+        // If email changed, explicitly set email_verified_at to null
+        if ($emailChanged) {
+            $user->email_verified_at = null;
+            $user->save();
+        }
+        
+        Log::info('After update', [
+            'email' => $user->email,
+            'email_verified_at' => $user->email_verified_at,
+            'fresh_email_verified_at' => $user->fresh()->email_verified_at,
+        ]);
+
+        // Send verification email if email was changed
+        if ($emailChanged) {
+            $user->sendEmailVerificationNotification();
+            Log::info('Verification email sent to new address');
+        }
 
         $response = [
             'message' => 'Profile updated successfully',
@@ -64,7 +96,8 @@ class ProfileController extends Controller
         ];
 
         if ($emailChanged) {
-            $response['message'] = 'Profile updated successfully. Please verify your new email address.';
+            $response['message'] = 'Profile updated successfully. Please check your email to verify your new address.';
+            $response['email_changed'] = true;
         }
 
         return response()->json($response);
@@ -74,10 +107,23 @@ class ProfileController extends Controller
     {
         $user = $request->user();
 
-        $validated = $request->validate([
+        // Support both field naming conventions
+        $passwordField = $request->has('new_password') ? 'new_password' : 'password';
+        $currentPasswordField = 'current_password';
+        
+        $rules = [
             'current_password' => ['required', 'string'],
-            'password' => ['required', 'string', Password::min(8)->mixedCase()->numbers()->symbols(), 'confirmed'],
-        ]);
+            $passwordField => ['required', 'string', Password::min(8)->mixedCase()->numbers()->symbols()],
+        ];
+        
+        // Add confirmation field validation based on which naming convention is used
+        if ($passwordField === 'new_password') {
+            $rules['new_password_confirmation'] = ['required', 'string'];
+        } else {
+            $rules['password_confirmation'] = ['required', 'string'];
+        }
+
+        $validated = $request->validate($rules);
 
         // Verify current password
         if (!Hash::check($validated['current_password'], $user->password)) {
@@ -88,10 +134,36 @@ class ProfileController extends Controller
                 ]
             ], 422);
         }
+        
+        $newPassword = $validated[$passwordField];
+        $confirmation = $passwordField === 'new_password' 
+            ? $validated['new_password_confirmation'] 
+            : $validated['password_confirmation'];
+        
+        // Check if passwords match
+        if ($newPassword !== $confirmation) {
+            $confirmationField = $passwordField === 'new_password' ? 'new_password_confirmation' : 'password_confirmation';
+            return response()->json([
+                'message' => 'The passwords do not match.',
+                'errors' => [
+                    $confirmationField => ['The passwords do not match.']
+                ]
+            ], 422);
+        }
+        
+        // Check if new password is same as current password
+        if (Hash::check($newPassword, $user->password)) {
+            return response()->json([
+                'message' => 'New password must be different from current password.',
+                'errors' => [
+                    $passwordField => ['New password must be different from current password.']
+                ]
+            ], 422);
+        }
 
         // Update password
         $user->update([
-            'password' => Hash::make($validated['password'])
+            'password' => Hash::make($newPassword)
         ]);
 
         return response()->json([

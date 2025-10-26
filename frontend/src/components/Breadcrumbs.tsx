@@ -9,6 +9,7 @@ interface BreadcrumbItem {
 const routeLabels: Record<string, string> = {
   '': 'Home',
   'dashboard': 'Dashboard',
+  'settings': 'Settings',
   'login': 'Login',
   'register': 'Register',
   '2fa-setup': 'Two-Factor Authentication',
