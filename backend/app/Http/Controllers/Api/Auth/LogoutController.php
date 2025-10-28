@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Api\Auth;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class LogoutController extends Controller
 {
@@ -15,6 +16,9 @@ class LogoutController extends Controller
         if (method_exists($request->user(), 'currentAccessToken') && $request->user()->currentAccessToken()) {
             $request->user()->currentAccessToken()->delete();
         }
+
+        // Logout from the web guard
+        Auth::guard('web')->logout();
 
         // Invalidate session for SPA
         if ($request->hasSession()) {
