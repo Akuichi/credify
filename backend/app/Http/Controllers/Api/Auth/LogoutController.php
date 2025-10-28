@@ -26,8 +26,13 @@ class LogoutController extends Controller
             $request->session()->regenerateToken();
         }
 
-        return response()->json([
+        // Create response and clear session cookies
+        $response = response()->json([
             'message' => 'Successfully logged out',
         ]);
+
+        // Explicitly forget/clear the session cookie
+        $cookieName = config('session.cookie');
+        return $response->withCookie(cookie()->forget($cookieName));
     }
 }

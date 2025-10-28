@@ -229,6 +229,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       localStorage.removeItem('auth_token');
       delete api.defaults.headers.common['Authorization'];
       
+      // Clear all cookies (session cookies from Sanctum)
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
+      
       setState({
         user: null,
         isAuthenticated: false,
@@ -246,6 +253,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Even if the logout API call fails, clear state and tokens
       localStorage.removeItem('auth_token');
       delete api.defaults.headers.common['Authorization'];
+      
+      // Clear all cookies even on error
+      document.cookie.split(";").forEach((c) => {
+        document.cookie = c
+          .replace(/^ +/, "")
+          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+      });
       
       setState({
         user: null,
