@@ -114,8 +114,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error: any) {
       console.error('Login error:', error);
       const errorMessage = error.response?.data?.message || 'Login failed';
-      showToast.error(errorMessage);
-      throw new Error(errorMessage);
+      
+      // Don't show toast for rate limit errors - let the component handle it
+      if (error.response?.status !== 429) {
+        showToast.error(errorMessage);
+      }
+      
+      // Re-throw the original error to preserve headers (especially retry-after for rate limiting)
+      throw error;
     }
   };
 

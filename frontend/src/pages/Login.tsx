@@ -65,7 +65,9 @@ export default function Login() {
         setRateLimitRemaining(seconds);
         setError(`Too many login attempts. Please wait ${seconds} seconds before trying again.`);
       } else {
-        setError(err.message);
+        // Get error message from response or use the error message
+        const errorMessage = err.response?.data?.message || err.message || 'Login failed';
+        setError(errorMessage);
       }
     } finally {
       setIsLoading(false);
