@@ -50,24 +50,30 @@ export default function App() {
     }
     
     // Default notifications for new users
-    return [
+    const notifications: Notification[] = [
       {
         id: '1',
         type: 'success',
         title: 'Welcome to Credify!',
         message: 'Your account has been created successfully.',
-        timestamp: new Date().toISOString(),
+        timestamp: user.created_at || new Date().toISOString(),
         read: false,
       },
-      {
+    ];
+    
+    // Only show 2FA notification if it's not enabled
+    if (!user.two_factor_enabled) {
+      notifications.push({
         id: '2',
         type: 'warning',
         title: 'Enable Two-Factor Authentication',
         message: 'Secure your account by enabling 2FA.',
-        timestamp: new Date(Date.now() - 3600000).toISOString(),
-        read: !user?.two_factor_enabled,
-      },
-    ];
+        timestamp: user.created_at || new Date().toISOString(),
+        read: false,
+      });
+    }
+    
+    return notifications;
   };
 
   const [notifications, setNotifications] = React.useState<Notification[]>([]);
@@ -79,7 +85,7 @@ export default function App() {
     } else {
       setNotifications([]);
     }
-  }, [user?.id]);
+  }, [user?.id, user?.two_factor_enabled, user?.created_at]);
 
   // Save notifications to localStorage whenever they change - user-specific
   React.useEffect(() => {
