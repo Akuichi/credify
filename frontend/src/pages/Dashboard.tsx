@@ -195,8 +195,22 @@ export default function Dashboard() {
             </div>
             
             <div>
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400">Email Address</p>
-              <p className="text-sm text-gray-900 dark:text-gray-100 font-medium break-all mt-0.5">{user?.email}</p>
+              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1">Email Address</p>
+              <div className="flex items-center gap-2 flex-wrap">
+                <p className="text-sm text-gray-900 dark:text-gray-100 font-medium break-all">{user?.email}</p>
+                {user?.email_verified_at ? (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 flex-shrink-0">
+                    <svg className="w-3 h-3 mr-1" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    Verified
+                  </span>
+                ) : (
+                  <span className="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 flex-shrink-0">
+                    Not Verified
+                  </span>
+                )}
+              </div>
             </div>
             
             {user?.mobile_number && (
@@ -215,24 +229,6 @@ export default function Dashboard() {
                   day: 'numeric' 
                 }) : 'Not available'}
               </p>
-            </div>
-            
-            <div>
-              <p className="text-xs font-medium text-gray-500 dark:text-gray-400 mb-1.5">Email Verification</p>
-              <div className="flex flex-wrap items-center gap-2">
-                {user?.email_verified_at ? (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300">
-                    <svg className="w-3.5 h-3.5 mr-1" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                    </svg>
-                    Verified
-                  </span>
-                ) : (
-                  <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300">
-                    Not Verified
-                  </span>
-                )}
-              </div>
             </div>
           </div>
         </div>
