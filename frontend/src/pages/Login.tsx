@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { Form, Input, Button } from '../components/Form';
@@ -9,12 +9,29 @@ export default function Login() {
   const { login } = useAuth();
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [rateLimitRemaining, setRateLimitRemaining] = useState<number | null>(null);
   const [touched, setTouched] = useState({ email: false, password: false });
   const [formData, setFormData] = useState<LoginCredentials>({
     email: '',
     password: '',
     remember: false,
   });
+
+  // Countdown timer for rate limit
+  useEffect(() => {
+    if (rateLimitRemaining !== null && rateLimitRemaining > 0) {
+      const timer = setInterval(() => {
+        setRateLimitRemaining(prev => {
+          if (prev === null || prev <= 1) {
+            return null;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [rateLimitRemaining]);
 
   // Real-time validation (only email for login)
   const emailValidation = validateEmail(formData.email);
@@ -41,7 +58,15 @@ export default function Login() {
     try {
       await login(formData);
     } catch (err: any) {
-      setError(err.message);
+      // Check if it's a rate limit error (429)
+      if (err.response?.status === 429) {
+        const retryAfter = err.response?.headers['retry-after'];
+        const seconds = retryAfter ? parseInt(retryAfter) : 30;
+        setRateLimitRemaining(seconds);
+        setError(`Too many login attempts. Please wait ${seconds} seconds before trying again.`);
+      } else {
+        setError(err.message);
+      }
     } finally {
       setIsLoading(false);
     }
@@ -83,6 +108,24 @@ export default function Login() {
         </div>
 
         <Form onSubmit={handleSubmit} error={error}>
+          {rateLimitRemaining !== null && rateLimitRemaining > 0 && (
+            <div className="mb-4 p-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg">
+              <div className="flex items-center">
+                <svg className="w-5 h-5 text-yellow-600 dark:text-yellow-500 mr-2" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                </svg>
+                <div>
+                  <p className="text-sm font-medium text-yellow-800 dark:text-yellow-300">
+                    Account temporarily locked
+                  </p>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-400 mt-1">
+                    Please wait <span className="font-bold text-lg">{rateLimitRemaining}</span> seconds before trying again
+                  </p>
+                </div>
+              </div>
+            </div>
+          )}
+          
           <Input
             label="Email Address"
             id="email"
@@ -134,8 +177,8 @@ export default function Login() {
             </div>
           </div>
 
-          <Button type="submit" isLoading={isLoading}>
-            Sign in
+          <Button type="submit" isLoading={isLoading} disabled={rateLimitRemaining !== null && rateLimitRemaining > 0}>
+            {rateLimitRemaining !== null && rateLimitRemaining > 0 ? `Wait ${rateLimitRemaining}s` : 'Sign in'}
           </Button>
         </Form>
       </div>

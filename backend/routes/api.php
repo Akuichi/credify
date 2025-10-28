@@ -17,12 +17,12 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Public routes - move to regular web middleware for proper session handling
-Route::post('/register', RegisterController::class)->middleware(['web', 'throttle:6,1']);
-Route::post('/login', LoginController::class)->middleware(['web', 'throttle:6,1']);
+Route::post('/register', RegisterController::class)->middleware(['web', 'throttle:4,0.5']);
+Route::post('/login', LoginController::class)->middleware(['web', 'throttle:4,0.5']);
 
 // Password reset routes
-Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword'])->middleware(['web', 'throttle:6,1']);
-Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->middleware(['web', 'throttle:6,1']);
+Route::post('/forgot-password', [PasswordResetController::class, 'forgotPassword'])->middleware(['web', 'throttle:4,0.5']);
+Route::post('/reset-password', [PasswordResetController::class, 'resetPassword'])->middleware(['web', 'throttle:4,0.5']);
 
 // Email verification link route
 Route::get('/email/verify/{id}/{hash}', [VerificationController::class, 'verify'])
