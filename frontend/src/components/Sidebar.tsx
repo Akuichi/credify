@@ -31,29 +31,9 @@ export const Sidebar: React.FC<SidebarProps> = ({ onProfileClick }) => {
   });
   const [isCompactMode, setIsCompactMode] = useState(false);
   const [collapsedSections, setCollapsedSections] = useState<Set<string>>(new Set());
-  const [activeSessions, setActiveSessions] = useState(0);
   const [hasNewActivity, setHasNewActivity] = useState(false);
   const location = useLocation();
   const { user, logout } = useAuth();
-
-  // Fetch active sessions count
-  useEffect(() => {
-    const fetchSessionsCount = async () => {
-      try {
-        const response = await api.get('/api/auth/sessions');
-        setActiveSessions(response.data.sessions?.length || 0);
-      } catch (error) {
-        console.error('Failed to fetch sessions:', error);
-      }
-    };
-
-    if (user) {
-      fetchSessionsCount();
-      // Refresh every 30 seconds
-      const interval = setInterval(fetchSessionsCount, 30000);
-      return () => clearInterval(interval);
-    }
-  }, [user]);
 
   // Handle window resize - open sidebar on desktop, close on mobile
   useEffect(() => {

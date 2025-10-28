@@ -12,9 +12,10 @@ class LogoutController extends Controller
     public function __invoke(Request $request): JsonResponse
     {
         // Support both session-based and token-based logout
-        // If using personal access tokens
-        if (method_exists($request->user(), 'currentAccessToken') && $request->user()->currentAccessToken()) {
-            $request->user()->currentAccessToken()->delete();
+        // If using personal access tokens (not TransientToken from session auth)
+        $currentToken = $request->user()->currentAccessToken();
+        if ($currentToken && !($currentToken instanceof \Laravel\Sanctum\TransientToken)) {
+            $currentToken->delete();
         }
 
         // Logout from the web guard
@@ -26,13 +27,18 @@ class LogoutController extends Controller
             $request->session()->regenerateToken();
         }
 
-        // Create response and clear session cookies
+        // Create response and clear ALL auth-related cookies
         $response = response()->json([
             'message' => 'Successfully logged out',
         ]);
 
-        // Explicitly forget/clear the session cookie
-        $cookieName = config('session.cookie');
-        return $response->withCookie(cookie()->forget($cookieName));
+        // Get cookie names from config
+        $sessionCookie = config('session.cookie');
+        $csrfCookie = 'XSRF-TOKEN';
+        
+        // Forget both session and CSRF cookies with proper domain and path
+        return $response
+            ->withCookie(cookie()->forget($sessionCookie, '/', config('session.domain')))
+            ->withCookie(cookie()->forget($csrfCookie, '/', config('session.domain')));
     }
 }
