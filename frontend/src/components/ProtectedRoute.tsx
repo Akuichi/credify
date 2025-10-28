@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
@@ -11,6 +11,15 @@ export function ProtectedRoute({ children }: { children: React.ReactNode }) {
     const isLoading = Boolean(auth?.isLoading);
     const needsTwoFactor = Boolean(auth?.needsTwoFactor);
     const currentPath = String(location?.pathname || '');
+
+    // Re-verify authentication when component mounts or route changes
+    useEffect(() => {
+      if (isAuthenticated && auth?.getUser) {
+        auth.getUser().catch(() => {
+          // If verification fails, user will be logged out by AuthContext
+        });
+      }
+    }, [currentPath]);
 
     if (isLoading) {
       return (

@@ -68,6 +68,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     initializeAuth();
   }, []);
 
+  // Re-check authentication when navigating (e.g., when using browser back button)
+  useEffect(() => {
+    const handleVisibilityChange = async () => {
+      // When page becomes visible again (e.g., back button), verify auth state
+      if (document.visibilityState === 'visible' && state.isAuthenticated) {
+        try {
+          await getUser();
+        } catch (error) {
+          // If user fetch fails, they're not authenticated
+          setState(prev => ({
+            ...prev,
+            user: null,
+            isAuthenticated: false,
+          }));
+          localStorage.removeItem('auth_token');
+          delete api.defaults.headers.common['Authorization'];
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('focus', handleVisibilityChange);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('focus', handleVisibilityChange);
+    };
+  }, [state.isAuthenticated]);
+
     const getUser = async () => {
     try {
       console.log('Fetching user data...');
@@ -208,7 +237,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         temporaryToken: undefined,
       });
       showToast.success('Logged out successfully');
-      navigate('/login');
+      
+      // Use replace to prevent back button from returning to protected routes
+      navigate('/login', { replace: true });
     } catch (error: any) {
       console.error('Logout failed:', error);
       
@@ -223,7 +254,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         needsTwoFactor: false,
         temporaryToken: undefined,
       });
-      navigate('/login');
+      
+      // Use replace to prevent back button from returning to protected routes
+      navigate('/login', { replace: true });
     } finally {
       setIsLoggingOut(false);
     }
