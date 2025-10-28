@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\User;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Cache;
@@ -93,7 +94,16 @@ class AuthController extends Controller
 
     public function logout(Request $request)
     {
-        $request->user()->currentAccessToken()->delete();
+        // Delete the current access token if using API tokens
+        if ($request->user()->currentAccessToken()) {
+            $request->user()->currentAccessToken()->delete();
+        }
+        
+        // Invalidate the session (important for cookie-based auth)
+        Auth::guard('web')->logout();
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+        
         return response()->json(['message' => 'Logged out']);
     }
 
