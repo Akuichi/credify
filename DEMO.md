@@ -601,6 +601,5 @@ SAY: "Do you have any questions or would you like me to
 
 ---
 
-**GOOD LUCK WITH YOUR DEMO! 🎉**
 
 
