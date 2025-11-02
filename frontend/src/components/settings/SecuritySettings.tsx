@@ -4,16 +4,16 @@ import api from '../../api/axios';
 import { showToast } from '../../utils/toast';
 import { TwoFactorSetupModal } from '../TwoFactorSetupModal';
 import { PasswordConfirmModal } from '../PasswordConfirmModal';
+import DisableTwoFactor from '../DisableTwoFactor';
 import { validatePasswordField, validatePasswordConfirmation } from '../../utils/validation';
 
 export const SecuritySettings: React.FC = () => {
   const { user, getUser } = useAuth();
-  const [showDisableConfirm, setShowDisableConfirm] = useState(false);
   const [showSetupModal, setShowSetupModal] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
-  const [isDisabling, setIsDisabling] = useState(false);
-  const [verificationCode, setVerificationCode] = useState('');
-  const [disableError, setDisableError] = useState('');
+  const [showDisablePasswordConfirm, setShowDisablePasswordConfirm] = useState(false);
+  const [showDisable2FA, setShowDisable2FA] = useState(false);
+  const [pendingAction, setPendingAction] = useState<'enable' | 'disable' | null>(null);
   
   // Change password state
   const [isChangingPassword, setIsChangingPassword] = useState(false);
@@ -25,52 +25,23 @@ export const SecuritySettings: React.FC = () => {
   const [passwordErrors, setPasswordErrors] = useState<Record<string, string>>({});
 
   const handle2FASetup = () => {
+    setPendingAction('enable');
     setShowPasswordConfirm(true);
   };
 
-  const handlePasswordConfirmed = () => {
+  const handlePasswordConfirmedForEnable = () => {
+    setShowPasswordConfirm(false);
     setShowSetupModal(true);
+    setPendingAction(null);
   };
 
-  const handleDisable2FA = async () => {
-    if (!verificationCode.trim()) {
-      setDisableError('Verification code is required');
-      return;
-    }
-
-    if (verificationCode.length !== 6 || !/^\d+$/.test(verificationCode)) {
-      setDisableError('Please enter a valid 6-digit code');
-      return;
-    }
-
-    setIsDisabling(true);
-    setDisableError('');
-
-    try {
-      await api.post('/api/2fa/disable', {
-        code: verificationCode,
-      });
-
-      showToast.success('Two-factor authentication disabled successfully');
-      await getUser();
-      setShowDisableConfirm(false);
-      setVerificationCode('');
-    } catch (error: any) {
-      console.error('2FA disable error:', error);
-      if (error.response?.data?.message) {
-        setDisableError(error.response.data.message);
-      } else {
-        setDisableError('Failed to disable 2FA. Please try again.');
-      }
-    } finally {
-      setIsDisabling(false);
-    }
+  const handleDisable2FAClick = () => {
+    setShowDisablePasswordConfirm(true);
   };
 
-  const handleCancelDisable = () => {
-    setShowDisableConfirm(false);
-    setVerificationCode('');
-    setDisableError('');
+  const handlePasswordConfirmedForDisable = () => {
+    setShowDisablePasswordConfirm(false);
+    setShowDisable2FA(true);
   };
 
   // Change password handlers
@@ -243,83 +214,12 @@ export const SecuritySettings: React.FC = () => {
                 <span>Enable Two-Factor Authentication</span>
               </button>
             ) : (
-              <>
-                {!showDisableConfirm ? (
-                  <button
-                    onClick={() => setShowDisableConfirm(true)}
-                    className="w-full px-6 py-3 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg transition-all"
-                  >
-                    Disable Two-Factor Authentication
-                  </button>
-                ) : (
-                  <div className="space-y-4">
-                    <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg">
-                      <p className="text-sm font-medium text-red-900 dark:text-red-300">
-                        Are you sure you want to disable 2FA?
-                      </p>
-                      <p className="text-sm text-red-700 dark:text-red-400 mt-1">
-                        This will make your account less secure. Enter the 6-digit code from your authenticator app to confirm.
-                      </p>
-                    </div>
-
-                    <div>
-                      <label htmlFor="verification_code" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
-                        Verification Code
-                      </label>
-                      <input
-                        type="text"
-                        id="verification_code"
-                        value={verificationCode}
-                        onChange={(e) => {
-                          const value = e.target.value.replace(/\D/g, '').slice(0, 6);
-                          setVerificationCode(value);
-                          setDisableError('');
-                        }}
-                        maxLength={6}
-                        className={`w-full px-4 py-3 rounded-lg border ${
-                          disableError
-                            ? 'border-red-500 focus:ring-red-500'
-                            : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
-                        } bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:border-transparent transition-all text-center text-2xl tracking-widest font-mono`}
-                        placeholder="000000"
-                        autoComplete="off"
-                      />
-                      {disableError && <p className="mt-1 text-sm text-red-600 dark:text-red-400">{disableError}</p>}
-                    </div>
-
-                    <div className="flex items-center space-x-3">
-                      <button
-                        onClick={handleCancelDisable}
-                        disabled={isDisabling}
-                        className="flex-1 px-6 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        onClick={handleDisable2FA}
-                        disabled={isDisabling}
-                        className="flex-1 px-6 py-2.5 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center space-x-2"
-                      >
-                        {isDisabling ? (
-                          <>
-                            <svg className="animate-spin h-4 w-4" fill="none" viewBox="0 0 24 24">
-                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                              <path
-                                className="opacity-75"
-                                fill="currentColor"
-                                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
-                              />
-                            </svg>
-                            <span>Disabling...</span>
-                          </>
-                        ) : (
-                          <span>Confirm Disable</span>
-                        )}
-                      </button>
-                    </div>
-                  </div>
-                )}
-              </>
+              <button
+                onClick={handleDisable2FAClick}
+                className="w-full px-6 py-3 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg transition-all"
+              >
+                Disable Two-Factor Authentication
+              </button>
             )}
           </div>
         </div>
@@ -571,14 +471,35 @@ export const SecuritySettings: React.FC = () => {
         </div>
       </div>
 
-      {/* Password Confirmation Modal */}
+      {/* Password Confirmation Modal for Enable 2FA */}
       <PasswordConfirmModal
         isOpen={showPasswordConfirm}
         onClose={() => setShowPasswordConfirm(false)}
-        onSuccess={handlePasswordConfirmed}
+        onSuccess={handlePasswordConfirmedForEnable}
         title="Enable Two-Factor Authentication"
         message="Please confirm your password to continue setting up 2FA."
       />
+
+      {/* Password Confirmation Modal for Disable 2FA */}
+      <PasswordConfirmModal
+        isOpen={showDisablePasswordConfirm}
+        onClose={() => setShowDisablePasswordConfirm(false)}
+        onSuccess={handlePasswordConfirmedForDisable}
+        title="Verify Your Password"
+        message="Please enter your password to proceed with disabling Two-Factor Authentication."
+      />
+
+      {/* Disable 2FA Modal - Requires 6-digit code */}
+      {showDisable2FA && (
+        <DisableTwoFactor
+          onSuccess={() => {
+            setShowDisable2FA(false);
+            showToast.success('Two-factor authentication disabled successfully');
+            getUser();
+          }}
+          onCancel={() => setShowDisable2FA(false)}
+        />
+      )}
 
       {/* 2FA Setup Modal */}
       <TwoFactorSetupModal isOpen={showSetupModal} onClose={() => setShowSetupModal(false)} />

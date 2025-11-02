@@ -7,9 +7,11 @@ import { showToast } from '../utils/toast';
 interface PasswordConfirmModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (password?: string) => void;
   title?: string;
   message?: string;
+  returnPassword?: boolean; // If true, pass the password to onSuccess callback
+  apiEndpoint?: string; // Custom endpoint for password verification, defaults to /api/auth/verify-password
 }
 
 export const PasswordConfirmModal: React.FC<PasswordConfirmModalProps> = ({
@@ -18,6 +20,8 @@ export const PasswordConfirmModal: React.FC<PasswordConfirmModalProps> = ({
   onSuccess,
   title = 'Confirm Your Password',
   message = 'Please enter your password to continue with this action.',
+  returnPassword = false,
+  apiEndpoint = '/api/auth/verify-password',
 }) => {
   const [password, setPassword] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -35,14 +39,23 @@ export const PasswordConfirmModal: React.FC<PasswordConfirmModalProps> = ({
     setError('');
 
     try {
-      await api.post('/api/auth/verify-password', {
-        password: password,
-      });
+      // If returnPassword is true, skip API call and just return the password
+      if (returnPassword) {
+        showToast.success('Password verified');
+        const passwordValue = password;
+        setPassword('');
+        onClose();
+        onSuccess(passwordValue);
+      } else {
+        await api.post(apiEndpoint, {
+          password: password,
+        });
 
-      showToast.success('Password verified');
-      setPassword('');
-      onClose();
-      onSuccess();
+        showToast.success('Password verified');
+        setPassword('');
+        onClose();
+        onSuccess();
+      }
     } catch (err: any) {
       setError(err.response?.data?.message || 'Incorrect password');
       showToast.error('Password verification failed');

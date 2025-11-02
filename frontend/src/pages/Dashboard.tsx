@@ -5,7 +5,6 @@ import api from '../api/axios'
 import SessionManager from '../components/SessionManager'
 import DisableTwoFactor from '../components/DisableTwoFactor'
 import EmailVerificationBanner from '../components/EmailVerificationBanner'
-import ConfirmDialog from '../components/ConfirmDialog'
 import { StatCard } from '../components/StatCard'
 import { QuickActions } from '../components/QuickActions'
 import { ActivityTimeline, ActivityItem } from '../components/ActivityTimeline'
@@ -15,8 +14,8 @@ import { TwoFactorSetupModal } from '../components/TwoFactorSetupModal'
 
 export default function Dashboard() {
   const { user, getUser } = useAuth();
+  const [showDisablePasswordConfirm, setShowDisablePasswordConfirm] = useState(false);
   const [showDisable2FA, setShowDisable2FA] = useState(false);
-  const [showConfirmDisable, setShowConfirmDisable] = useState(false);
   const [showProfileModal, setShowProfileModal] = useState(false);
   const [showPasswordConfirm, setShowPasswordConfirm] = useState(false);
   const [show2FAModal, setShow2FAModal] = useState(false);
@@ -73,6 +72,15 @@ export default function Dashboard() {
   const handlePasswordConfirmed = () => {
     setShowPasswordConfirm(false);
     setShow2FAModal(true);
+  };
+
+  const handleDisable2FAClick = () => {
+    setShowDisablePasswordConfirm(true);
+  };
+
+  const handlePasswordConfirmedForDisable = () => {
+    setShowDisablePasswordConfirm(false);
+    setShowDisable2FA(true);
   };
 
   // Quick actions
@@ -268,35 +276,23 @@ export default function Dashboard() {
             <div>
               <h3 className="text-sm font-semibold text-gray-900 dark:text-gray-100 mb-2">Two-Factor Authentication</h3>
               {user?.two_factor_enabled ? (
-                <>
-                  {!showDisable2FA ? (
-                    <div className="space-y-3">
-                      <div className="flex items-start space-x-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
-                        <svg className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                          <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-                        </svg>
-                        <div>
-                          <p className="text-sm font-medium text-green-900 dark:text-green-100">Protection Active</p>
-                          <p className="text-xs text-green-700 dark:text-green-300 mt-0.5">Your account is secured with 2FA.</p>
-                        </div>
-                      </div>
-                      <button 
-                        onClick={() => setShowConfirmDisable(true)}
-                        className="min-h-[44px] px-4 py-2 border-2 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 text-sm font-semibold rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-400 dark:hover:border-red-600 transition-all"
-                      >
-                        Disable 2FA
-                      </button>
+                <div className="space-y-3">
+                  <div className="flex items-start space-x-2 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
+                    <svg className="w-5 h-5 text-green-600 dark:text-green-400 mt-0.5 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                      <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                    </svg>
+                    <div>
+                      <p className="text-sm font-medium text-green-900 dark:text-green-100">Protection Active</p>
+                      <p className="text-xs text-green-700 dark:text-green-300 mt-0.5">Your account is secured with 2FA.</p>
                     </div>
-                  ) : (
-                    <DisableTwoFactor 
-                      onSuccess={() => {
-                        getUser();
-                        setShowDisable2FA(false);
-                      }}
-                      onCancel={() => setShowDisable2FA(false)}
-                    />
-                  )}
-                </>
+                  </div>
+                  <button 
+                    onClick={handleDisable2FAClick}
+                    className="min-h-[44px] px-4 py-2 border-2 border-red-300 dark:border-red-700 text-red-700 dark:text-red-300 text-sm font-semibold rounded-lg hover:bg-red-50 dark:hover:bg-red-900/20 hover:border-red-400 dark:hover:border-red-600 transition-all"
+                  >
+                    Disable 2FA
+                  </button>
+                </div>
               ) : (
                 <div className="space-y-3">
                   <Link 
@@ -335,28 +331,13 @@ export default function Dashboard() {
         <SessionManager />
       </div>
       
-      {/* Confirmation Dialog */}
-      <ConfirmDialog
-        isOpen={showConfirmDisable}
-        onClose={() => setShowConfirmDisable(false)}
-        onConfirm={() => {
-          setShowConfirmDisable(false);
-          setShowDisable2FA(true);
-        }}
-        title="Disable Two-Factor Authentication?"
-        message="This will make your account less secure. You'll need to enter your 2FA code to confirm this action."
-        confirmText="Proceed"
-        cancelText="Keep Enabled"
-        variant="danger"
-      />
-
       {/* Profile Update Modal */}
       <ProfileUpdateModal 
         isOpen={showProfileModal}
         onClose={() => setShowProfileModal(false)}
       />
 
-      {/* Password Confirmation Modal */}
+      {/* Password Confirmation Modal for Enable 2FA */}
       <PasswordConfirmModal
         isOpen={showPasswordConfirm}
         onClose={() => setShowPasswordConfirm(false)}
@@ -364,6 +345,26 @@ export default function Dashboard() {
         title="Verify Your Password"
         message="Please enter your password to proceed with enabling Two-Factor Authentication."
       />
+
+      {/* Password Confirmation Modal for Disable 2FA */}
+      <PasswordConfirmModal
+        isOpen={showDisablePasswordConfirm}
+        onClose={() => setShowDisablePasswordConfirm(false)}
+        onSuccess={handlePasswordConfirmedForDisable}
+        title="Verify Your Password"
+        message="Please enter your password to proceed with disabling Two-Factor Authentication."
+      />
+
+      {/* Disable 2FA Modal - Requires 6-digit code */}
+      {showDisable2FA && (
+        <DisableTwoFactor
+          onSuccess={() => {
+            setShowDisable2FA(false);
+            getUser();
+          }}
+          onCancel={() => setShowDisable2FA(false)}
+        />
+      )}
 
       {/* 2FA Setup Modal */}
       <TwoFactorSetupModal
