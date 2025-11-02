@@ -67,9 +67,10 @@ SAY: "Passwords are hashed with bcrypt on the backend.
   → POINT OUT: User object has no "password" field
   → POINT OUT: Only hashed version is stored (not visible here)
 
-  <img width="818" height="321" alt="image" src="https://github.com/user-attachments/assets/08dbec44-9aa0-4d45-9330-a06c8c382130" />
+  
 
 ```
+<img width="818" height="321" alt="image" src="https://github.com/user-attachments/assets/08dbec44-9aa0-4d45-9330-a06c8c382130" />
 
 #### 1.2 CSRF Protection (2 min)
 ```
@@ -79,20 +80,19 @@ DO:
 ✓ IN DEVTOOLS → Network tab → Clear (trash icon)
 ✓ Click "Logout" (if logged in)
 ✓ Click "Login" 
-<img width="812" height="234" alt="image" src="https://github.com/user-attachments/assets/c411b305-8e64-4985-a7d8-a649c3a74e2e" />
+
 
 ✓ IN DEVTOOLS → Network tab
 ✓ Find: GET /sanctum/csrf-cookie request
 ✓ Click on it
   → POINT OUT: "This fetches a CSRF token before login"
-  <img width="799" height="387" alt="image" src="https://github.com/user-attachments/assets/058581a8-2d7c-4440-a74b-52375c8a3a9e" />
+  
 
 
 ✓ Go to Application tab → Cookies → http://localhost:3000
   → POINT OUT: "XSRF-TOKEN" cookie exists
   → SHOW: The long encrypted value
-  <img width="845" height="639" alt="image" src="https://github.com/user-attachments/assets/477433be-21e8-4585-86ef-fd7bd46100fe" />
-
+  
 
 SAY: "Now watch it being sent with the login request."
 
@@ -105,11 +105,15 @@ SAY: "Now watch it being sent with the login request."
 ✓ Click it → Go to "Headers" tab
 ✓ Scroll to "Request Headers"
   → POINT OUT: "X-XSRF-TOKEN" header with the token value
-<img width="810" height="490" alt="image" src="https://github.com/user-attachments/assets/b92f5af9-be99-49b9-bd96-99315db123a2" />
+
 
 SAY: "Without this token, the request would be rejected. 
      This prevents cross-site request forgery attacks."
 ```
+<img width="812" height="234" alt="image" src="https://github.com/user-attachments/assets/c411b305-8e64-4985-a7d8-a649c3a74e2e" />
+<img width="799" height="387" alt="image" src="https://github.com/user-attachments/assets/058581a8-2d7c-4440-a74b-52375c8a3a9e" />
+<img width="845" height="639" alt="image" src="https://github.com/user-attachments/assets/477433be-21e8-4585-86ef-fd7bd46100fe" />
+<img width="810" height="490" alt="image" src="https://github.com/user-attachments/assets/b92f5af9-be99-49b9-bd96-99315db123a2" />
 
 #### 1.3 Rate Limiting (2 min)
 ```
@@ -124,19 +128,19 @@ DO:
 ✓ Enter password: "wrong123"
 ✓ Click Login → FAST click "Login" 5 times
   (Or manually try 5 times quickly)
-<img width="543" height="289" alt="image" src="https://github.com/user-attachments/assets/87fa6d8a-6c76-4a97-b662-3306429fcc31" />
+
 
 ✓ IN DEVTOOLS → Network tab
 ✓ Find the 5th POST /api/login request
 ✓ Click on it
   → POINT OUT: Status Code: 429 Too Many Requests
-<img width="835" height="348" alt="image" src="https://github.com/user-attachments/assets/83d590f7-9b7a-403f-b3f9-b2d9abd901f0" />
+
   
 ✓ Go to "Headers" tab
   → POINT OUT: "X-RateLimit-Limit: 4"
   → POINT OUT: "X-RateLimit-Remaining: 0"
   → POINT OUT: "Retry-After: 30" (seconds)
-<img width="570" height="390" alt="image" src="https://github.com/user-attachments/assets/14d7bcae-4bde-4fca-9cba-02c34d48efb7" />
+
 
 SAY: "The system blocks further attempts for 30 seconds.
      This is configured as 4 attempts per 30 seconds."
@@ -146,6 +150,9 @@ SAY: "The system blocks further attempts for 30 seconds.
 ```
 
 ---
+<img width="543" height="289" alt="image" src="https://github.com/user-attachments/assets/87fa6d8a-6c76-4a97-b662-3306429fcc31" />
+<img width="835" height="348" alt="image" src="https://github.com/user-attachments/assets/83d590f7-9b7a-403f-b3f9-b2d9abd901f0" />
+<img width="570" height="390" alt="image" src="https://github.com/user-attachments/assets/14d7bcae-4bde-4fca-9cba-02c34d48efb7" />
 
 ### **PART 2: Two-Factor Authentication (6-7 minutes)**
 
@@ -201,7 +208,7 @@ DO:
 ✓ Go to "Response" tab
   → POINT OUT: "two_factor_required": true
   → POINT OUT: "temp_token" provided (for the 2FA step only)
-<img width="811" height="189" alt="image" src="https://github.com/user-attachments/assets/992448f3-ac97-47c4-8125-0076eb216372" />
+
 
 ✓ SHOW: 2FA verification page appears
 ✓ Check phone for current 6-digit code
@@ -214,7 +221,7 @@ DO:
 SAY: "Two-factor authentication is required every time after password login.
      This adds an extra layer of security."
 ```
-
+<img width="811" height="189" alt="image" src="https://github.com/user-attachments/assets/992448f3-ac97-47c4-8125-0076eb216372" />
 #### 2.3 Disable 2FA Protection (1 min)
 ```
 SAY: "Disabling 2FA requires re-authentication for security."
@@ -258,10 +265,10 @@ DO:
 
 SAY: "The HttpOnly flag means JavaScript cannot access this cookie.
      This prevents XSS attacks from stealing session tokens."
-<img width="835" height="605" alt="image" src="https://github.com/user-attachments/assets/62175d5b-a332-4874-8e4f-09de224315c1" />
+
 
 ```
-
+<img width="835" height="605" alt="image" src="https://github.com/user-attachments/assets/62175d5b-a332-4874-8e4f-09de224315c1" />
 #### 3.2 No Tokens in Console (2 min)
 ```
 SAY: "Let me prove there are no authentication tokens 
@@ -271,18 +278,19 @@ DO:
 
 ✓ Go to Application tab → Local Storage → http://localhost:3000
   → POINT OUT: No tokens stored here
-<img width="831" height="668" alt="image" src="https://github.com/user-attachments/assets/cd40cad8-7b25-45a3-a812-ced2b32c8b43" />
+
 
 ✓ Go to Application tab → Session Storage → http://localhost:3000
   → POINT OUT: No tokens stored here
 
 SAY: "All authentication is handled via secure HttpOnly cookies.
      No tokens are accessible to JavaScript."
-<img width="834" height="651" alt="image" src="https://github.com/user-attachments/assets/9ab1824c-6de8-4ae4-8f20-dce4e9b0acf4" />
+
 
 
 ```
-
+<img width="831" height="668" alt="image" src="https://github.com/user-attachments/assets/cd40cad8-7b25-45a3-a812-ced2b32c8b43" />
+<img width="834" height="651" alt="image" src="https://github.com/user-attachments/assets/9ab1824c-6de8-4ae4-8f20-dce4e9b0acf4" />
 #### 3.3 Logout Invalidates Session (1 min)
 ```
 SAY: "When you logout, the session is completely invalidated."
@@ -290,7 +298,6 @@ SAY: "When you logout, the session is completely invalidated."
 DO:
 ✓ IN DEVTOOLS → Application → Cookies
 ✓ Note the current session cookie value (show it)
-<img width="832" height="615" alt="image" src="https://github.com/user-attachments/assets/3d942e00-ef3b-40f0-a080-0110eb865fda" />
 
 ✓ Click "Logout" button
 
@@ -300,7 +307,6 @@ DO:
 
 ✓ Go back to Application → Cookies
   → POINT OUT: Session cookie is deleted or value changed
-<img width="833" height="591" alt="image" src="https://github.com/user-attachments/assets/ba669b2e-0677-4a0b-b3b0-638848d3ff88" />
 
 ✓ Try to access protected page (e.g., type URL: /dashboard)
   → POINT OUT: Automatically redirected to login page
@@ -308,6 +314,8 @@ DO:
 SAY: "The session is completely destroyed on logout.
      You cannot access protected resources."
 ```
+<img width="832" height="615" alt="image" src="https://github.com/user-attachments/assets/3d942e00-ef3b-40f0-a080-0110eb865fda" />
+<img width="833" height="591" alt="image" src="https://github.com/user-attachments/assets/ba669b2e-0677-4a0b-b3b0-638848d3ff88" />
 
 ---
 
@@ -481,7 +489,7 @@ SAY: "Let me create a new login from a different browser
   → POINT OUT: Different browser shown
   → POINT OUT: Timestamp is current
 
-<img width="1427" height="380" alt="image" src="https://github.com/user-attachments/assets/799cc748-bea1-4a27-9a2f-792f4b09076e" />
+
 
 
 SAY: "Every successful login is logged for security auditing.
@@ -489,7 +497,7 @@ SAY: "Every successful login is logged for security auditing.
 ```
 
 ---
-
+<img width="1427" height="380" alt="image" src="https://github.com/user-attachments/assets/799cc748-bea1-4a27-9a2f-792f4b09076e" />
 ### **PART 7: General Security (2-3 minutes)**
 
 #### 7.1 Error Handling (2 min)
@@ -594,4 +602,5 @@ SAY: "Do you have any questions or would you like me to
 ---
 
 **GOOD LUCK WITH YOUR DEMO! 🎉**
+
 
