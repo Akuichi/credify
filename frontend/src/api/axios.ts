@@ -10,12 +10,6 @@ const api = axios.create({
   },
 });
 
-// Check if there's a stored token and add it to default headers
-const storedToken = localStorage.getItem('auth_token');
-if (storedToken) {
-  api.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
-}
-
 // Add request interceptor to handle XSRF-TOKEN
 api.interceptors.request.use(function (config) {
   let token = document.cookie

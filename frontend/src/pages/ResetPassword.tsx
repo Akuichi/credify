@@ -21,18 +21,7 @@ const ResetPassword: React.FC = () => {
 
   // Extract token and email from URL query parameters
   useEffect(() => {
-    // Clean up authentication state but don't redirect
-    const clearAuthState = async () => {
-      // Only clear token and auth state without full logout flow that causes redirects
-      if (isAuthenticated) {
-        // Remove token from localStorage
-        localStorage.removeItem('auth_token');
-        // Remove Authorization header from default headers
-        delete api.defaults.headers.common['Authorization'];
-      }
-    };
-    
-    clearAuthState();
+    // No need to clear localStorage tokens - using session-based auth
     
     const queryParams = new URLSearchParams(location.search);
     const token = queryParams.get('token');
@@ -86,9 +75,6 @@ const ResetPassword: React.FC = () => {
     
     try {
       await resetPassword(formData);
-      // Make sure auth state is completely cleared
-      localStorage.removeItem('auth_token');
-      delete api.defaults.headers.common['Authorization'];
       setSuccess(true);
       // Remove the automatic redirect - let user click the button
     } catch (err: any) {
@@ -127,9 +113,6 @@ const ResetPassword: React.FC = () => {
               <p className="text-gray-700 dark:text-gray-300">You can now log in with your new password.</p>
               <button 
                 onClick={() => {
-                  // Ensure we're completely logged out before going to login page
-                  localStorage.removeItem('auth_token');
-                  delete api.defaults.headers.common['Authorization'];
                   navigate('/login');
                 }}
                 className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-medium rounded-lg shadow-lg hover:shadow-xl transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"

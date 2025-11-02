@@ -99,14 +99,6 @@ class TwoFactorAuthController extends Controller
      */
     public function verifyLogin(TwoFactorVerifyRequest $request): JsonResponse
     {
-        // Check if token is a temporary token
-        $token = $request->user()->currentAccessToken();
-        if (!$token || !$token->can('2fa-verify')) {
-            return response()->json([
-                'message' => 'Invalid or expired token',
-            ], 403);
-        }
-
         $user = $request->user();
         $code = $request->validated()['code'];
 
@@ -122,12 +114,9 @@ class TwoFactorAuthController extends Controller
             ], 422);
         }
 
-        // Create a new token with full access
-        $token = $user->createToken('auth_token')->plainTextToken;
-
-        // Only delete the token if it's not a transient token
+        // Delete the temporary token
         $currentToken = $request->user()->currentAccessToken();
-        if (!($currentToken instanceof \Laravel\Sanctum\TransientToken)) {
+        if ($currentToken && !($currentToken instanceof \Laravel\Sanctum\TransientToken)) {
             $currentToken->delete();
         }
 
@@ -143,10 +132,13 @@ class TwoFactorAuthController extends Controller
             'user_agent' => $request->userAgent(),
         ]);
 
+        // Log the user in with session using web guard (for SPA)
+        \Illuminate\Support\Facades\Auth::guard('web')->login($user);
+        $request->session()->regenerate();
+
         return response()->json([
             'message' => 'Two-factor authentication successful',
             'user' => $user,
-            'token' => $token,
         ]);
     }
 

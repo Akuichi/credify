@@ -37,17 +37,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       try {
         console.log('Getting CSRF cookie...');
         // Make sure to get CSRF token first
-        const csrfResponse = await api.get('/sanctum/csrf-cookie');
-        console.log('CSRF cookie response:', csrfResponse.status);
+        await api.get('/sanctum/csrf-cookie');
         
         // Small delay to ensure cookie is set
         await new Promise(resolve => setTimeout(resolve, 300));
         
-        // Check for stored token
-        const storedToken = localStorage.getItem('auth_token');
-        console.log('Stored token exists:', !!storedToken);
-        
-        console.log('Cookies after CSRF:', document.cookie);
+        // Check authentication via session (no localStorage token needed)
         await getUser();
       } catch (error) {
         console.error('Auth initialization error:', error);
@@ -56,10 +51,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           user: null,
           isAuthenticated: false,
         }));
-        
-        // Clear invalid token if authentication fails
-        localStorage.removeItem('auth_token');
-        delete api.defaults.headers.common['Authorization'];
       } finally {
         setState(prev => ({ ...prev, isLoading: false }));
       }
@@ -82,8 +73,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             user: null,
             isAuthenticated: false,
           }));
-          localStorage.removeItem('auth_token');
-          delete api.defaults.headers.common['Authorization'];
         }
       }
     };
@@ -171,30 +160,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       // During login flow verification (temp token provided from login response)
       if (state.needsTwoFactor && state.temporaryToken) {
-        const response = await api.post('/api/login/verify', { code: data.code }, {
+        await api.post('/api/login/verify', { code: data.code }, {
           headers: { Authorization: `Bearer ${state.temporaryToken}` }
         });
-        
-        console.log('2FA verification response:', response.data);
-        
-        // Store the permanent token from the response
-        if (response.data.token) {
-          // Store the token in local storage or in a more secure way if needed
-          localStorage.setItem('auth_token', response.data.token);
-          
-          // Update the axios default headers to include the token for future requests
-          api.defaults.headers.common['Authorization'] = `Bearer ${response.data.token}`;
-        }
+        // After successful 2FA verification, the backend creates a session
+        // No need to store tokens - session cookie handles authentication
       } 
       // Regular 2FA verification for an already authenticated user
       else {
         await api.post('/api/2fa/verify', { code: data.code });
       }
       
+      // Fetch user to confirm session is established
       await getUser();
+      showToast.success('2FA verification successful!');
       navigate('/dashboard');
     } catch (error: any) {
-      throw new Error(error.response?.data?.message || '2FA verification failed');
+      console.error('2FA verification error:', error);
+      const errorMessage = error.response?.data?.message || '2FA verification failed';
+      showToast.error(errorMessage);
+      throw new Error(errorMessage);
     }
   };
 
@@ -225,16 +210,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       await api.post('/api/logout');
       
-      // Clear auth token from storage and axios headers
-      localStorage.removeItem('auth_token');
-      delete api.defaults.headers.common['Authorization'];
-      
-      // Clear all cookies (session cookies from Sanctum)
-      document.cookie.split(";").forEach((c) => {
-        document.cookie = c
-          .replace(/^ +/, "")
-          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-      });
+      // Session cookies are cleared by the backend (HttpOnly)
+      // No need to clear localStorage tokens
       
       setState({
         user: null,
@@ -250,17 +227,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } catch (error: any) {
       console.error('Logout failed:', error);
       
-      // Even if the logout API call fails, clear state and tokens
-      localStorage.removeItem('auth_token');
-      delete api.defaults.headers.common['Authorization'];
-      
-      // Clear all cookies even on error
-      document.cookie.split(";").forEach((c) => {
-        document.cookie = c
-          .replace(/^ +/, "")
-          .replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
-      });
-      
+      // Even if the logout API call fails, clear state
       setState({
         user: null,
         isAuthenticated: false,
@@ -292,10 +259,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }): Promise<void> => {
     try {
       await api.post('/api/reset-password', data);
-      
-      // Immediately clear authentication state after password reset
-      localStorage.removeItem('auth_token');
-      delete api.defaults.headers.common['Authorization'];
       
       // Update authentication state to ensure user needs to log in again
       setState(prev => ({
